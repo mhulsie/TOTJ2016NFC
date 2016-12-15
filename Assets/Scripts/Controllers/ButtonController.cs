@@ -222,9 +222,14 @@ public class ButtonController : MonoBehaviour {
             switchPanel(board);
         }
     }
+
     //lobby
     public void ExitGame()
     {
+        if (RoomState.p1 != new Player())
+        {
+            SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p1.accountID);
+        }
         if (RoomState.p2 != new Player())
         {
             SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p2.accountID);
@@ -263,10 +268,13 @@ public class ButtonController : MonoBehaviour {
         {
             if (lobbyPullTimer > 120 || lobbyPullTimer == -1)
             {
-                string started = SQL.Instance.getData("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
-                if(started == "true")
+                if (RoomState.host != PlayerState.id)
                 {
-                    SceneManager.LoadScene("game");
+                    string started = SQL.Instance.getData("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
+                    if(started == "true")
+                    {
+                        SceneManager.LoadScene("game");
+                    }
                 }
                 lobbyPullTimer = 0;
 
