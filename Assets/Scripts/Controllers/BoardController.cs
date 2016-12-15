@@ -42,11 +42,13 @@ public class BoardController : MonoBehaviour {
     public Image prefab3;
     public Text text;
 
-    public bool ready = true;
+    public bool ready = false;
 
     private Image[] tiles;
 
     private int currentTile;
+
+    private Board board = new Board();
 	// Use this for initialization
 	void Start () {
 
@@ -87,6 +89,7 @@ public class BoardController : MonoBehaviour {
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnScan");
         
+        
 
     }
 	
@@ -99,37 +102,52 @@ public class BoardController : MonoBehaviour {
 
     public void OnScan(string result)
     {
-        text.text = result;
-        int scan;
-        int.TryParse(result, out scan);
-        //bos
-        if(scan > 0 && scan < 5)
+        if (board.layout.Count < 30)
         {
-            tiles[currentTile].sprite = prefab.sprite;
-        } else if( scan > 4 && scan < 10)
-        {
-            tiles[currentTile].sprite = prefab2.sprite;
+            text.text = result;
+            int scan;
+            int.TryParse(result, out scan);
+            //bos
+            //if (scan > 0 && scan < 5)
+            //{
+                tiles[currentTile].sprite = prefab.sprite;
+           // }
+           // else if (scan > 4 && scan < 10)
+            //{
+           //     tiles[currentTile].sprite = prefab2.sprite;
+            //}
+            currentTile++;
+            board.layout.Add(result);
+            
+            if(board.layout.Count == 30)
+            {
+                ready = true;
+            }
         }
-        currentTile++;
+
     }
 
     public void Undo()
     {
-        tiles[currentTile].sprite = null;
-        currentTile--;
+        if (currentTile > 0)
+        {
+            tiles[currentTile-1].sprite = null;
+            currentTile--;
+
+            string lastItem = board.layout[board.layout.Count - 1];
+            board.layout.Remove(lastItem);
+        }
     }
 
     public void StartGame()
     {
-        for (int i = 0; i < 30; i++)
-        {
-            if(tiles[currentTile] == null)
-            {
-                ready = false;
-            }
-        }
+        string json = JsonUtility.ToJson(board.layout);
+        string gamestate = JsonUtility.ToJson(new GameState(true));
+
+
         if(ready == true)
         {
+            SQL.Instance.getData("INSERT INTO board(active,roomID,layout,gamestate) VALUES ('true'," + RoomState.id + ",'" + json + "','" + gamestate + "')");
             SceneManager.LoadScene("game");
         }
     }
