@@ -13,7 +13,7 @@ namespace totj3.Models
         public Event[] events;
 
         public GameState(bool t)
-        {/*
+        {
             currentTurn = 1;
             // Host
             if (t)
@@ -73,7 +73,7 @@ namespace totj3.Models
             else
             {
                 getGameState();
-            }      */     
+            }        
         }
 
         public void submitGameState()
