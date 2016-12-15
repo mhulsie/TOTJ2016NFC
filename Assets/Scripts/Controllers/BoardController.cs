@@ -42,7 +42,7 @@ public class BoardController : MonoBehaviour {
     public Image prefab3;
     public Text text;
 
-    public bool ready = false;
+    public bool ready = true;
 
     private Image[] tiles;
 
@@ -142,12 +142,13 @@ public class BoardController : MonoBehaviour {
     public void StartGame()
     {
         string json = JsonUtility.ToJson(board.layout);
+        
         string gamestate = JsonUtility.ToJson(new GameState(true));
-
+        
 
         if(ready == true)
         {
-            SQL.Instance.getData("INSERT INTO board(active,roomID,layout,gamestate) VALUES ('true'," + RoomState.id + ",'" + json + "','" + gamestate + "')");
+            SQL.Instance.getData("INSERT INTO board (active, roomID, layout, gamestate) VALUES ('true'," + 1 + ",'" + json + "','" + gamestate + "')");
             SceneManager.LoadScene("game");
         }
     }
