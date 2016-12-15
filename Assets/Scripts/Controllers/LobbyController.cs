@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Assets.Scripts.Model;
-using Assets.Scripts.States;
 using UnityEngine.SceneManagement;
 
 public class LobbyController : MonoBehaviour {
@@ -36,7 +34,6 @@ public class LobbyController : MonoBehaviour {
             string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
             string[] current = currentPlayers.Split('*');
             RoomState.currentPlayers = current.Length;
-            Player defaultPlayer = new Player();
             RoomState.p1 = new Player();
             RoomState.p2 = new Player();
             RoomState.p3 = new Player();

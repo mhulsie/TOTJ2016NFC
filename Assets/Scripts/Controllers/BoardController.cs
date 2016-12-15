@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class BoardController : MonoBehaviour {
 
@@ -40,6 +41,8 @@ public class BoardController : MonoBehaviour {
     public Image prefab2;
     public Image prefab3;
     public Text text;
+
+    public bool ready = true;
 
     private Image[] tiles;
 
@@ -107,9 +110,27 @@ public class BoardController : MonoBehaviour {
         {
             tiles[currentTile].sprite = prefab2.sprite;
         }
-        //ring currentImagestring = "tile" + currentTile;
-       //mage currentImage = GameObject.Find(currentImagestring).GetComponent<Image>();
-       // currentImage.sprite = prefab.sprite;
         currentTile++;
+    }
+
+    public void Undo()
+    {
+        tiles[currentTile].sprite = null;
+        currentTile--;
+    }
+
+    public void StartGame()
+    {
+        for (int i = 0; i < 30; i++)
+        {
+            if(tiles[currentTile] == null)
+            {
+                ready = false;
+            }
+        }
+        if(ready == true)
+        {
+            SceneManager.LoadScene("game");
+        }
     }
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Assets.Scripts.Model;
-using Assets.Scripts.States;
 using UnityEngine.SceneManagement;
 
 public class JoinController : MonoBehaviour {

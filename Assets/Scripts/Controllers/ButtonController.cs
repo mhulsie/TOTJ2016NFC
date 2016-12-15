@@ -2,8 +2,6 @@
 using System.Collections;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Assets.Scripts.Model;
-using Assets.Scripts.States;
 
 public class ButtonController : MonoBehaviour {
     //Main
@@ -46,8 +44,8 @@ public class ButtonController : MonoBehaviour {
             switchPanel(main);
         }
     }
-    
-    //Host
+
+    #region HostLogic
     public Text roomName;
     private int players;
     public Room room;
@@ -87,12 +85,13 @@ public class ButtonController : MonoBehaviour {
                 int.TryParse(SQL.Instance.getData("select max(roomID) as result from room"), out RoomState.id);
 
                 SQL.Instance.getData("UPDATE `account` SET `roomID`= " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
-                ButtonController BC = new ButtonController();
                 switchPanel(lobby);
             }
         }
     }
+    #endregion
 
+    #region PlayerLogic
     //player
     public int playerHat;
     public int playerVehicle;
@@ -145,7 +144,9 @@ public class ButtonController : MonoBehaviour {
             switchPanel(main);
         }
     }
+    #endregion
 
+    #region JoinLogic
     //join
     public Text joinRoom;
     public Text errorJoin;
@@ -166,7 +167,6 @@ public class ButtonController : MonoBehaviour {
                     RoomState.host = room.host;
                     RoomState.active = room.active;
                     RoomState.players = room.players;
-                    Debug.Log("amount f players in room " + room.players);
 
                     string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
                     string[] current = currentPlayers.Split('*');
@@ -212,14 +212,14 @@ public class ButtonController : MonoBehaviour {
             error.text = "Vul een kamernaam in!";
         }
     }
-
-
+    #endregion
+    
     //lobby
     public void StartGame()
     {
         if (RoomState.players == RoomState.currentPlayers)
         {
-            SceneManager.LoadScene("game");
+            switchPanel(board);
         }
     }
     //lobby
@@ -239,7 +239,7 @@ public class ButtonController : MonoBehaviour {
         }
         switchPanel(main);
     }
-    //
+    //lobby
 
     //Game
     public void NewGameBtn(string newGameLevel)
@@ -263,12 +263,16 @@ public class ButtonController : MonoBehaviour {
         {
             if (lobbyPullTimer > 120 || lobbyPullTimer == -1)
             {
+                string started = SQL.Instance.getData("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
+                if(started == "true")
+                {
+                    SceneManager.LoadScene("game");
+                }
                 lobbyPullTimer = 0;
 
                 string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
                 string[] current = currentPlayers.Split('*');
                 RoomState.currentPlayers = current.Length;
-                Player defaultPlayer = new Player();
                 RoomState.p1 = new Player();
                 RoomState.p2 = new Player();
                 RoomState.p3 = new Player();

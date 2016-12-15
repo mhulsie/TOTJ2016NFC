@@ -13,7 +13,6 @@ public class GameState : MonoBehaviour  {
         // Host
         if (t)
         {
-            Random rnd = new Random();
             Random.InitState(1234567);
             int rand1;
             int rand2;
