@@ -37,9 +37,14 @@ public class BoardController : MonoBehaviour {
     public Image tile29;
     public Image tile30;
 
-    public Image prefab;
-    public Image prefab2;
-    public Image prefab3;
+    public Image city;
+    public Image cave;
+    public Image village;
+    public Image lake;
+    public Image open;
+    public Image flowers;
+    public Image forest;
+
     public Text text;
 
     public bool ready = true;
@@ -107,15 +112,36 @@ public class BoardController : MonoBehaviour {
             text.text = result;
             int scan;
             int.TryParse(result, out scan);
-            //bos
-            //if (scan > 0 && scan < 5)
-            //{
-                tiles[currentTile].sprite = prefab.sprite;
-           // }
-           // else if (scan > 4 && scan < 10)
-            //{
-           //     tiles[currentTile].sprite = prefab2.sprite;
-            //}
+
+            if (scan == 1)
+            {
+                tiles[currentTile].sprite = city.sprite;
+            }
+            else if (scan == 2)
+            {
+                tiles[currentTile].sprite = cave.sprite;
+            }
+            else if(scan == 3 || scan == 4 || scan == 5)
+            {
+                tiles[currentTile].sprite = village.sprite;
+            }
+            else if(scan == 6 || scan == 7)
+            {
+                tiles[currentTile].sprite = lake.sprite;
+            }
+            else if(scan >= 8 && scan <= 13)
+            {
+                tiles[currentTile].sprite = open.sprite;
+            }
+            else if (scan == 14 || scan == 15 || scan == 16)
+            {
+                tiles[currentTile].sprite = flowers.sprite;
+            }
+            else if (scan > 16)
+            {
+                tiles[currentTile].sprite = forest.sprite;
+            }
+
             currentTile++;
             board.layout.Add(result);
             
