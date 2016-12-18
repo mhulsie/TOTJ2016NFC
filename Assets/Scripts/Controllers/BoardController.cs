@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class BoardController : MonoBehaviour {
 
@@ -54,6 +55,8 @@ public class BoardController : MonoBehaviour {
     private int currentTile;
 
     private Board board = new Board();
+
+    
 	// Use this for initialization
 	void Start () {
 
@@ -107,7 +110,7 @@ public class BoardController : MonoBehaviour {
 
     public void OnScan(string result)
     {
-        if (board.layout.Count < 30)
+        if (board.wrapper.layout.Count < 30)
         {
             text.text = result;
             int scan;
@@ -143,9 +146,9 @@ public class BoardController : MonoBehaviour {
             }
 
             currentTile++;
-            board.layout.Add(result);
+            board.wrapper.layout.Add(result);
             
-            if(board.layout.Count == 30)
+            if(board.wrapper.layout.Count == 30)
             {
                 ready = true;
             }
@@ -160,14 +163,16 @@ public class BoardController : MonoBehaviour {
             tiles[currentTile-1].sprite = null;
             currentTile--;
 
-            string lastItem = board.layout[board.layout.Count - 1];
-            board.layout.Remove(lastItem);
+            string lastItem = board.wrapper.layout[board.wrapper.layout.Count - 1];
+            board.wrapper.layout.Remove(lastItem);
         }
     }
 
     public void StartGame()
     {
-        string json = JsonUtility.ToJson(board.layout);
+        
+
+        string json = JsonUtility.ToJson(board.wrapper);
         
         string gamestate = JsonUtility.ToJson(new GameState(true));
         

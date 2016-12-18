@@ -8,13 +8,17 @@ public class Board
     public int boardID;
     public string active;
     public int roomID;
-    public List<string> layout;
     public GameState gamestate;
     public int turn;
+    [Serializable]
+    public struct layoutWrapper { public List<string> layout; };
+    public layoutWrapper wrapper;
+
 
     public Board()
     {
-        layout = new List<string>();
+        
+        wrapper.layout = new List<string>();
     }
 
     public void setBoard()
