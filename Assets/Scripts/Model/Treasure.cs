@@ -5,7 +5,7 @@ using UnityEngine;
 public class Treasure : MonoBehaviour {
 
     public int found;
-    public Location location;
+    public int tile;
 
     public Treasure()
     {

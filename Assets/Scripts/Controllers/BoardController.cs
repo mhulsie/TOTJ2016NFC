@@ -56,10 +56,21 @@ public class BoardController : MonoBehaviour {
 
     private Board board = new Board();
 
-    
-	// Use this for initialization
-	void Start () {
 
+    [System.Serializable]
+    public struct playerWrapper { public List<Player> list; };
+    public playerWrapper players;
+
+    [System.Serializable]
+    public struct incidentWrapper { public List<Incident> list; };
+    public incidentWrapper incidents;
+
+
+    // Use this for initialization
+    void Start () {
+
+        players.list = new List<Player>();
+        incidents.list = new List<Incident>();
         currentTile = 0;
         tiles = new Image[30];
 
@@ -170,17 +181,59 @@ public class BoardController : MonoBehaviour {
 
     public void StartGame()
     {
-        
-
-        string json = JsonUtility.ToJson(board.wrapper);
-        
-        string gamestate = JsonUtility.ToJson(new GameState(true));
-        
-
         if(ready == true)
         {
-            SQL.Instance.getData("INSERT INTO board (active, roomID, layout, gamestate) VALUES ('true'," + 1 + ",'" + json + "','" + gamestate + "')");
-            SceneManager.LoadScene("game");
+            UnityEngine.Random.InitState((int)Time.time);
+            int rand1;
+            int rand2;
+            int rand3;
+            int rand4;
+            int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand1);
+            int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand2);
+            int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand3);
+            int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand4);
+            while (rand1 == rand2 || rand1 == rand3 || rand1 == rand4 || rand2 == rand3 || rand2 == rand4 || rand3 == rand4)
+            {
+                int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand1);
+                int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand2);
+                int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand3);
+                int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand4);
+            }
+            while (rand1 != -1 && rand2 != -1 && rand3 != -1 && rand4 != -1)
+            {
+                if (rand1 > rand2 && rand1 > rand3 && rand1 > rand4)
+                {
+                    players.list.Add(RoomState.p1);
+                    rand1 = -1;
+                }
+                if (rand2 > rand1 && rand2 > rand3 && rand2 > rand4)
+                {
+                    players.list.Add(RoomState.p2);
+                    rand2 = -1;
+                }
+                if (rand3 > rand1 && rand3 > rand2 && rand3 > rand4)
+                {
+                    players.list.Add(RoomState.p3);
+                    rand3 = -1;
+                }
+                if (rand4 > rand1 && rand4 > rand2 && rand4 > rand3)
+                {
+                    players.list.Add(RoomState.p4);
+                    rand4 = -1;
+                }
+            }
+
+            Treasure treasure = new Treasure();
+            int.TryParse(UnityEngine.Random.Range(1f, 31f).ToString("0"), out treasure.tile);
+
+            string layoutJson = JsonUtility.ToJson(board.wrapper);
+            string playersJson = JsonUtility.ToJson(players.list);
+            string treasureJson = JsonUtility.ToJson(treasure);
+            string incidentsJson = JsonUtility.ToJson(incidents.list);
+            text.text = "INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')";
+            SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
+            //SQL.Instance.getData("INSERT INTO board (active, roomID, layout, turn) VALUES ('true', 1,'" + layoutJson + "', -1)");
+            //SceneManager.LoadScene("game");
         }
     }
 }

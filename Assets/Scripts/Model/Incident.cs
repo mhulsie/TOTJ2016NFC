@@ -1,9 +1,9 @@
 ﻿using System;
 public class Incident
 {
-    public int eventID;
+    public int incidentID;
     public string name;
-    public string action;
-    public string condition;
+    public string action; // startIncident(5)
+    public string condition; // onTurnInItem() // OnScan
+    public int tile;
 }
-
