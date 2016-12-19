@@ -5,8 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
 
-public class BoardController : MonoBehaviour {
-
+public class BoardController : MonoBehaviour
+{
     public Image tile1;
     public Image tile2;
     public Image tile3;
@@ -207,7 +207,6 @@ public class BoardController : MonoBehaviour {
                     if (RoomState.p1.nickName != "")
                     {
                         players.list.Add(RoomState.p1);
-                        Debug.Log(players.list[0].nickName);
                     }
                 }
                 if (rand2 > rand1 && rand2 > rand3 && rand2 > rand4)
@@ -216,7 +215,6 @@ public class BoardController : MonoBehaviour {
                     if (RoomState.p2.nickName != "")
                     {
                         players.list.Add(RoomState.p2);
-                        Debug.Log(players.list[1].nickName);
                     }
                 }
                 if (rand3 > rand1 && rand3 > rand2 && rand3 > rand4)
@@ -225,7 +223,6 @@ public class BoardController : MonoBehaviour {
                     if (RoomState.p3.nickName != "")
                     {
                         players.list.Add(RoomState.p3);
-                        Debug.Log(players.list[2].nickName);
                     }
                 }
                 if (rand4 > rand1 && rand4 > rand2 && rand4 > rand3)
@@ -234,9 +231,14 @@ public class BoardController : MonoBehaviour {
                     if (RoomState.p4.nickName != "")
                     {
                         players.list.Add(RoomState.p4);
-                        Debug.Log(players.list[3].nickName);
                     }
                 }
+            }
+            int count = 0;
+            foreach (Player item in players.list)
+            {
+                Debug.Log(count + "   " + item.nickName);
+                count++;
             }
 
             Treasure treasure = new Treasure();
