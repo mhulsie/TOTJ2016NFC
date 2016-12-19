@@ -279,6 +279,7 @@ public class ButtonController : MonoBehaviour {
                 lobbyPullTimer = 0;
 
                 string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
+                Debug.Log(currentPlayers);
                 string[] current = currentPlayers.Split('*');
                 RoomState.currentPlayers = current.Length;
                 RoomState.p1 = new Player();
@@ -289,18 +290,22 @@ public class ButtonController : MonoBehaviour {
                 if (current.Length > 0)
                 {
                     RoomState.p1 = JsonUtility.FromJson<Player>(current[0]);
+                    Debug.Log("p1 = " + RoomState.p1.nickName);
                 }
                 if (current.Length > 1)
                 {
                     RoomState.p2 = JsonUtility.FromJson<Player>(current[1]);
+                    Debug.Log("p1 = " + RoomState.p2.nickName);
                 }
                 if (current.Length > 2)
                 {
                     RoomState.p3 = JsonUtility.FromJson<Player>(current[2]);
+                    Debug.Log("p1 = " + RoomState.p3.nickName);
                 }
                 if (current.Length > 3)
                 {
                     RoomState.p4 = JsonUtility.FromJson<Player>(current[3]);
+                    Debug.Log("p1 = " + RoomState.p4.nickName);
                 }
 
                 lobbyRoomName.text = RoomState.name + " (" + RoomState.currentPlayers + " / " + RoomState.players + ")";

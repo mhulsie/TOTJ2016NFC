@@ -199,27 +199,43 @@ public class BoardController : MonoBehaviour {
                 int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand3);
                 int.TryParse(UnityEngine.Random.Range(0f, 100f).ToString("0"), out rand4);
             }
-            while (rand1 != -1 && rand2 != -1 && rand3 != -1 && rand4 != -1)
+            while (rand1 != -1 || rand2 != -1 || rand3 != -1 || rand4 != -1)
             {
                 if (rand1 > rand2 && rand1 > rand3 && rand1 > rand4)
                 {
-                    players.list.Add(RoomState.p1);
                     rand1 = -1;
+                    if (RoomState.p1.nickName != "")
+                    {
+                        players.list.Add(RoomState.p1);
+                        Debug.Log(players.list[0].nickName);
+                    }
                 }
                 if (rand2 > rand1 && rand2 > rand3 && rand2 > rand4)
                 {
-                    players.list.Add(RoomState.p2);
                     rand2 = -1;
+                    if (RoomState.p2.nickName != "")
+                    {
+                        players.list.Add(RoomState.p2);
+                        Debug.Log(players.list[1].nickName);
+                    }
                 }
                 if (rand3 > rand1 && rand3 > rand2 && rand3 > rand4)
                 {
-                    players.list.Add(RoomState.p3);
                     rand3 = -1;
+                    if (RoomState.p3.nickName != "")
+                    {
+                        players.list.Add(RoomState.p3);
+                        Debug.Log(players.list[2].nickName);
+                    }
                 }
                 if (rand4 > rand1 && rand4 > rand2 && rand4 > rand3)
                 {
-                    players.list.Add(RoomState.p4);
                     rand4 = -1;
+                    if (RoomState.p4.nickName != "")
+                    {
+                        players.list.Add(RoomState.p4);
+                        Debug.Log(players.list[3].nickName);
+                    }
                 }
             }
 
@@ -227,9 +243,9 @@ public class BoardController : MonoBehaviour {
             int.TryParse(UnityEngine.Random.Range(1f, 31f).ToString("0"), out treasure.tile);
 
             string layoutJson = JsonUtility.ToJson(board.wrapper);
-            string playersJson = JsonUtility.ToJson(players.list);
+            string playersJson = JsonUtility.ToJson(players);
             string treasureJson = JsonUtility.ToJson(treasure);
-            string incidentsJson = JsonUtility.ToJson(incidents.list);
+            string incidentsJson = JsonUtility.ToJson(incidents);
             text.text = "INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')";
             SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
             //SQL.Instance.getData("INSERT INTO board (active, roomID, layout, turn) VALUES ('true', 1,'" + layoutJson + "', -1)");
