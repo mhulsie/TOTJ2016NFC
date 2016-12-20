@@ -34,8 +34,6 @@ public class GameController : MonoBehaviour {
         currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
-        Debug.Log(local.incidents[0].name);
-        //Debug.Log(local.board.playersList[currentTurn].accountID);
         foreach (Player item in local.players.list)
         {
             Debug.Log(item.accountID);
@@ -66,10 +64,7 @@ public class GameController : MonoBehaviour {
             pullTimer = 0;
             if(myTurn != true)
             {
-                Debug.Log("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID);
                 int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
-                Debug.Log("Currenturn before turncheck :       " + currentTurn);
-                Debug.Log("database player id : " + local.players.list[currentTurn].accountID);
                 if (PlayerState.id == local.players.list[currentTurn].accountID)
                 {
                     myTurn = true;
@@ -114,14 +109,14 @@ public class GameController : MonoBehaviour {
     {
         
         currentTurn++;
-        if(currentTurn == 2)
+        if(currentTurn > local.players.list.Count - 1)
         {
+            Debug.Log("DIERENDANS");
+            //DO animal logic
             currentTurn = 0;
         }
-        Debug.Log("currentturn in end func     " + currentTurn);
         switchPanel(GameMid);
         myTurn = false;
-        Debug.Log("update turn    " + "UPDATE board set turn = " + currentTurn + " where roomID = " + RoomState.id);
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + " where roomID = " + RoomState.id);
 
     }

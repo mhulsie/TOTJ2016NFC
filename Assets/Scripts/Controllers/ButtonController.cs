@@ -263,7 +263,12 @@ public class ButtonController : MonoBehaviour {
 
     public void Update()
     {
-        if(currentMid == lobby)
+        if (RoomState.host != PlayerState.id)
+        {
+            lobbyStartBtn.gameObject.SetActive(false);
+            lobbyExitBtn.gameObject.SetActive(false);
+        }
+            if (currentMid == lobby)
         {
             if (lobbyPullTimer > 120 || lobbyPullTimer == -1)
             {
