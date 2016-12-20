@@ -7,6 +7,14 @@ public class GameController : MonoBehaviour {
     public int currentTurn = 0;
     public Treasure treasure;
 
+    public GameObject MoveAction;
+    public GameObject DuringMove;
+    public GameObject ChooseAction;
+    public GameObject GameMid;
+    public GameObject DialogueMid;
+    public GameObject MapMid;
+
+    private GameObject currentMid;
 
     [System.Serializable]
     public struct playerWrapper { public List<Player> list; };
@@ -22,6 +30,7 @@ public class GameController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        currentMid = MoveAction;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
         Debug.Log(local.incidents[0].name);
@@ -43,8 +52,7 @@ public class GameController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-        //Keep pulling to see if its my turn
+        // Keep pulling to see if its my turn
         // Dont pull if its my turn
         if(pullTimer > 120 || pullTimer == -1)
         {
@@ -73,4 +81,48 @@ public class GameController : MonoBehaviour {
     {
         return JsonUtility.FromJson<GameState>(SQL.Instance.getData("select Gamestate from board where roomID = " + RoomState.id));
     }
+
+    #region ActionPanels
+    public void switchPanel(GameObject panel)
+    {
+        currentMid.gameObject.SetActive(false);
+        currentMid = panel;
+        panel.gameObject.SetActive(true);
+    }
+
+    public void endTurn()
+    {
+
+    }
+
+    public void setTrap()
+    {
+
+    }
+
+    public void getQuest()
+    {
+
+    }
+
+    public void doQuest()
+    {
+
+    }
+    public void reportQuest()
+    {
+
+    }
+
+    public void steal()
+    {
+
+    }
+
+    public void digTreasure()
+    {
+
+    }
+    #endregion
+
 }
