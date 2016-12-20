@@ -50,7 +50,6 @@ public class LocalLibrary
                 incidents.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
             }
         }
-        board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID = " + RoomState.id));
         //board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID = " + RoomState.id));
     }
 }
