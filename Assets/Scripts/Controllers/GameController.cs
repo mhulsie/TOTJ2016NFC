@@ -67,6 +67,7 @@ public class GameController : MonoBehaviour {
         return JsonUtility.FromJson<GameState>(SQL.Instance.getData("select Gamestate from board where roomID = " + RoomState.id));
     }
 
+    #region ActionPanels
     public void switchPanel(GameObject panel)
     {
         currentMid.gameObject.SetActive(false);
@@ -78,5 +79,35 @@ public class GameController : MonoBehaviour {
     {
 
     }
-    
+
+    public void setTrap()
+    {
+
+    }
+
+    public void getQuest()
+    {
+
+    }
+
+    public void doQuest()
+    {
+
+    }
+    public void reportQuest()
+    {
+
+    }
+
+    public void steal()
+    {
+
+    }
+
+    public void digTreasure()
+    {
+
+    }
+    #endregion
+
 }
