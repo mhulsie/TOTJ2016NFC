@@ -1,4 +1,4 @@
-﻿using System;
+﻿[System.Serializable]
 public class Incident
 {
     public int incidentID;

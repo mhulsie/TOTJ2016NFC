@@ -74,7 +74,6 @@ public class ButtonController : MonoBehaviour {
 
                 room.active = "true";
                 room.host = PlayerState.id;
-                room.host = 1;
 
                 RoomState.name = room.name;
                 RoomState.players = room.players;

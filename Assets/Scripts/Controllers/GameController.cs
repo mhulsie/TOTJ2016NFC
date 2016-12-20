@@ -15,17 +15,33 @@ public class GameController : MonoBehaviour {
     [System.Serializable]
     public struct incidentWrapper { public List<Incident> list; };
     public incidentWrapper incidents;
-
-    public GameState gs;
     
     // Use this for initialization
-    void Start () {
-        gs = getGameState();	
+    void Start ()
+    {
+        incidents.list = new List<Incident>();
+        LocalLibrary local = new LocalLibrary();
+        Debug.Log(local.incidents[0].name);
+        UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
+
+        foreach (Incident item in local.incidents)
+        {
+            item.tile = (int) Random.Range(1f, 30f);
+            Debug.Log(item.tile);
+        }
+        incidents.list = local.incidents;
+        SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(incidents) + "' WHERE boardID = " + local.board.boardID);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+        //Keep pulling to see if its my turn
+        // Dont pull if its my turn
+
+        //Start action panel sequence
 		
+        //If last player, animal dance
 	}
 
     public void createGameState()

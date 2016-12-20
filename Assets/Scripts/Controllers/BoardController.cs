@@ -183,7 +183,9 @@ public class BoardController : MonoBehaviour
     {
         if(ready == true)
         {
-            UnityEngine.Random.InitState((int)Time.time);
+
+            #region decidePlayers
+            UnityEngine.Random.InitState((int) System.DateTime.Now.Ticks);
             int rand1;
             int rand2;
             int rand3;
@@ -240,18 +242,23 @@ public class BoardController : MonoBehaviour
                 Debug.Log(count + "   " + item.nickName);
                 count++;
             }
+            #endregion
 
+            #region decideTreasure
             Treasure treasure = new Treasure();
-            int.TryParse(UnityEngine.Random.Range(1f, 31f).ToString("0"), out treasure.tile);
-
+            int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out treasure.tile);
+            #endregion
+            
+            #region allToJson
             string layoutJson = JsonUtility.ToJson(board.wrapper);
             string playersJson = JsonUtility.ToJson(players);
             string treasureJson = JsonUtility.ToJson(treasure);
             string incidentsJson = JsonUtility.ToJson(incidents);
+            #endregion
+
             text.text = "INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')";
             SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','1','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
-            //SQL.Instance.getData("INSERT INTO board (active, roomID, layout, turn) VALUES ('true', 1,'" + layoutJson + "', -1)");
-            //SceneManager.LoadScene("game");
+            SceneManager.LoadScene("game");
         }
     }
 }
