@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
-    public int currentTurn;
+    public int currentTurn = 0;
     public Treasure treasure;
 
 
@@ -15,13 +15,21 @@ public class GameController : MonoBehaviour {
     [System.Serializable]
     public struct incidentWrapper { public List<Incident> list; };
     public incidentWrapper incidents;
+
+    public int pullTimer = -1;
+    public LocalLibrary local;
     
     // Use this for initialization
     void Start ()
     {
         incidents.list = new List<Incident>();
-        LocalLibrary local = new LocalLibrary();
+        local = new LocalLibrary();
         Debug.Log(local.incidents[0].name);
+        //Debug.Log(local.board.playersList[currentTurn].accountID);
+        foreach (Player item in local.players.list)
+        {
+            Debug.Log(item.accountID);
+        }
         UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
 
         foreach (Incident item in local.incidents)
@@ -38,7 +46,14 @@ public class GameController : MonoBehaviour {
 
         //Keep pulling to see if its my turn
         // Dont pull if its my turn
-
+        if(pullTimer > 120 || pullTimer == -1)
+        {
+            string turn = SQL.Instance.getData("SELECT 'turn' FROM 'board' WHERE boardID = " + local.board.boardID);
+            if(PlayerState.id == local.players.list[currentTurn].accountID)
+            {
+                Debug.Log("IK BEN AAN DE BEURT HEUY");
+            }
+        }
         //Start action panel sequence
 		
         //If last player, animal dance

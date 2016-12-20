@@ -12,6 +12,16 @@ public class LocalLibrary
     public List<Status> statusEffects;
     public Board board;
 
+    [Serializable]
+    public struct layoutWrapper { public List<string> list; };
+    public layoutWrapper layout;
+
+    [Serializable]
+    public struct playerWrapper { public List<Player> list; };
+    public playerWrapper players;
+
+
+
     public LocalLibrary()
     {
         quests = new List<Quest>();
@@ -32,6 +42,7 @@ public class LocalLibrary
                 quests.Add(UnityEngine.JsonUtility.FromJson<Quest>(quest));
             }
         }
+        
 
         /*string tilesResult = SQL.Instance.getData("select * from tile");
         string[] tileSplitResult = tilesResult.Split('*');
@@ -50,7 +61,12 @@ public class LocalLibrary
                 incidents.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
             }
         }
+
         board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID = " + RoomState.id));
-        //board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID = " + RoomState.id));
+
+        players = JsonUtility.FromJson<playerWrapper>(board.players);
+
+        layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
+
     }
 }
