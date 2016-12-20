@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
-    public int currentTurn = 0;
+    public int currentTurn;
     public Treasure treasure;
 
     public GameObject MoveAction;
@@ -26,11 +26,12 @@ public class GameController : MonoBehaviour {
 
     public int pullTimer = -1;
     public LocalLibrary local;
+    public bool myTurn = false;
     
     // Use this for initialization
     void Start ()
     {
-        currentMid = MoveAction;
+        currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
         Debug.Log(local.incidents[0].name);
@@ -39,29 +40,48 @@ public class GameController : MonoBehaviour {
         {
             Debug.Log(item.accountID);
         }
-        UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
-
-        foreach (Incident item in local.incidents)
+        Debug.Log(local.players.list[currentTurn].nickName);
+        if(RoomState.host == PlayerState.id)
         {
-            item.tile = (int) Random.Range(1f, 30f);
-            Debug.Log(item.tile);
+            UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
+
+            foreach (Incident item in local.incidents)
+            {
+                item.tile = (int)Random.Range(1f, 30f);
+                Debug.Log(item.tile);
+            }
+            incidents.list = local.incidents;
+            SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
+            SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(incidents) + "' WHERE boardID = " + local.board.boardID);
         }
-        incidents.list = local.incidents;
-        SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(incidents) + "' WHERE boardID = " + local.board.boardID);
-	}
+    }
 	
 	// Update is called once per frame
 	void Update () {
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
+        Debug.Log(currentTurn);
         if(pullTimer > 120 || pullTimer == -1)
         {
-            string turn = SQL.Instance.getData("SELECT 'turn' FROM 'board' WHERE boardID = " + local.board.boardID);
-            if(PlayerState.id == local.players.list[currentTurn].accountID)
+            pullTimer = 0;
+            if(myTurn != true)
             {
-                Debug.Log("IK BEN AAN DE BEURT HEUY");
+                Debug.Log("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID);
+                int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
+                Debug.Log("Currenturn before turncheck :       " + currentTurn);
+                Debug.Log("database player id : " + local.players.list[currentTurn].accountID);
+                if (PlayerState.id == local.players.list[currentTurn].accountID)
+                {
+                    myTurn = true;
+                    switchPanel(MoveAction);
+                }
             }
         }
+        else
+        {
+            pullTimer++;
+        }
+        
         //Start action panel sequence
 		
         //If last player, animal dance
@@ -92,6 +112,17 @@ public class GameController : MonoBehaviour {
 
     public void endTurn()
     {
+        
+        currentTurn++;
+        if(currentTurn == 2)
+        {
+            currentTurn = 0;
+        }
+        Debug.Log("currentturn in end func     " + currentTurn);
+        switchPanel(GameMid);
+        myTurn = false;
+        Debug.Log("update turn    " + "UPDATE board set turn = " + currentTurn + " where roomID = " + RoomState.id);
+        SQL.Instance.getData("UPDATE board set turn = " + currentTurn + " where roomID = " + RoomState.id);
 
     }
 

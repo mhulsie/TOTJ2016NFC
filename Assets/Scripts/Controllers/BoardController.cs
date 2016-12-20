@@ -257,7 +257,7 @@ public class BoardController : MonoBehaviour
             #endregion
 
             text.text = "INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','0','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')";
-            SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','0','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
+            SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "',0,'" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
             SceneManager.LoadScene("game");
         }
     }
