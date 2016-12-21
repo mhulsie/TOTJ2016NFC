@@ -45,6 +45,7 @@ public class BoardController : MonoBehaviour
     public Image open;
     public Image flowers;
     public Image forest;
+    public Image defaultImage;
 
     public Text text;
 
@@ -171,7 +172,7 @@ public class BoardController : MonoBehaviour
     {
         if (currentTile > 0)
         {
-            tiles[currentTile-1].sprite = null;
+            tiles[currentTile-1].sprite = defaultImage.sprite;
             currentTile--;
 
             string lastItem = board.wrapper.layout[board.wrapper.layout.Count - 1];
