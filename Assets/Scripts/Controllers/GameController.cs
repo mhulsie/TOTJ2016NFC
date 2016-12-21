@@ -1,11 +1,14 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour {
     public int currentTurn;
     public Treasure treasure;
+
+    public Text testText;
+    public Text nfcTestText;
 
     public GameObject MoveAction;
     public GameObject DuringMove;
@@ -32,7 +35,7 @@ public class GameController : MonoBehaviour {
     void Start ()
     {
         AndroidNFCReader.enableBackgroundScan();
-        AndroidNFCReader.ScanNFC("GameController", "OnScan");
+        AndroidNFCReader.ScanNFC("GameController", "Harry");
         currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
@@ -155,28 +158,34 @@ public class GameController : MonoBehaviour {
     }
     #endregion
 
-    public void OnScan(string result)
+    public void Harry(string result)
     {
+        nfcTestText.text = " beginscan";
         if(myTurn == false)
         {
+            nfcTestText.text = " niet mijn beurd";
             return;
         }
 
         int scan;
         int.TryParse(result, out scan);
 
+        nfcTestText.text = " scan = " + scan;
         Incident currentIncident = null;
-
+        int count = 0;
         //check voor incident
         foreach (Incident i in local.incidents)
         {
+            count++;
             if(scan == i.tile)
             {
                 currentIncident = i;
             }
         }
-
-        if(currentIncident != null)
+        nfcTestText.text = "asdlkjasdlkajsda     " + count;
+        nfcTestText.text += currentIncident.name;
+        currentIncident.name = "Elephant";
+        if (currentIncident != null)
         {
             if (currentIncident.name == "Trap")
             {
@@ -184,7 +193,9 @@ public class GameController : MonoBehaviour {
             }
             else if (currentIncident.name == "Elephant")
             {
-                endTurn();
+                switchPanel(DialogueMid);
+                testText.text = "olievefant";
+                //endTurn();
             }
         }
     }
@@ -198,6 +209,7 @@ public class GameController : MonoBehaviour {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
 
+                randomTile = 4;
                 i.tile = randomTile;
 
             }
