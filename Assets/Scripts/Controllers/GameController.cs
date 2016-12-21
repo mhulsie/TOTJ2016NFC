@@ -31,6 +31,8 @@ public class GameController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        AndroidNFCReader.enableBackgroundScan();
+        AndroidNFCReader.ScanNFC("GameController", "OnScan");
         currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
@@ -109,15 +111,17 @@ public class GameController : MonoBehaviour {
     {
         
         currentTurn++;
-        if(currentTurn > local.players.list.Count - 1)
+        if(currentTurn == local.players.list.Count - 1)
         {
             Debug.Log("DIERENDANS");
-            //DO animal logic
+            AnimalDance();            
             currentTurn = 0;
         }
         switchPanel(GameMid);
         myTurn = false;
-        SQL.Instance.getData("UPDATE board set turn = " + currentTurn + " where roomID = " + RoomState.id);
+        incidents.list = local.incidents;
+        string incidentsJson = JsonUtility.ToJson(incidents);
+        SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = " + incidentsJson + "where roomID = " + RoomState.id);
 
     }
 
@@ -151,4 +155,52 @@ public class GameController : MonoBehaviour {
     }
     #endregion
 
+    public void OnScan(string result)
+    {
+        if(myTurn == false)
+        {
+            return;
+        }
+
+        int scan;
+        int.TryParse(result, out scan);
+
+        Incident currentIncident = null;
+
+        //check voor incident
+        foreach (Incident i in local.incidents)
+        {
+            if(scan == i.tile)
+            {
+                currentIncident = i;
+            }
+        }
+
+        if(currentIncident != null)
+        {
+            if (currentIncident.name == "Trap")
+            {
+                endTurn();
+            }
+            else if (currentIncident.name == "Elephant")
+            {
+                endTurn();
+            }
+        }
+    }
+
+    public void AnimalDance()
+    {
+        foreach(Incident i in local.incidents)
+        {
+            if(i.name == "Elephant")
+            {
+                int randomTile;
+                int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
+
+                i.tile = randomTile;
+
+            }
+        }
+    }
 }
