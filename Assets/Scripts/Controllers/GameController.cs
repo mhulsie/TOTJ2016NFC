@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameController : MonoBehaviour {
+public class GameController : MonoBehaviour
+{
     public int currentTurn;
     public Treasure treasure;
 
@@ -30,44 +31,43 @@ public class GameController : MonoBehaviour {
     public int pullTimer = -1;
     public LocalLibrary local;
     public bool myTurn = false;
-    
+
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         AndroidNFCReader.enableBackgroundScan();
-        AndroidNFCReader.ScanNFC("GameController", "Harry");
+        AndroidNFCReader.ScanNFC("GameController", "OnMove");
+
         currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
-        foreach (Player item in local.players.list)
-        {
-            Debug.Log(item.accountID);
-        }
-        Debug.Log(local.players.list[currentTurn].nickName);
-        if(RoomState.host == PlayerState.id)
+
+        PlayerState.energy = 15;
+
+        if (RoomState.host == PlayerState.id)
         {
             UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
 
             foreach (Incident item in local.incidents)
             {
                 item.tile = (int)Random.Range(1f, 30f);
-                Debug.Log(item.tile);
             }
             incidents.list = local.incidents;
             SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
             SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(incidents) + "' WHERE boardID = " + local.board.boardID);
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
         Debug.Log(currentTurn);
-        if(pullTimer > 120 || pullTimer == -1)
+        if (pullTimer > 120 || pullTimer == -1)
         {
             pullTimer = 0;
-            if(myTurn != true)
+            if (myTurn != true)
             {
                 int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
                 if (PlayerState.id == local.players.list[currentTurn].accountID)
@@ -81,15 +81,15 @@ public class GameController : MonoBehaviour {
         {
             pullTimer++;
         }
-        
+
         //Start action panel sequence
-		
+
         //If last player, animal dance
-	}
+    }
 
     public void createGameState()
     {
-        
+
     }
 
     public void submitGameState()
@@ -112,12 +112,12 @@ public class GameController : MonoBehaviour {
 
     public void endTurn()
     {
-        
+
         currentTurn++;
-        if(currentTurn == local.players.list.Count - 1)
+        if (currentTurn == local.players.list.Count - 1)
         {
             Debug.Log("DIERENDANS");
-            AnimalDance();            
+            AnimalDance();
             currentTurn = 0;
         }
         switchPanel(GameMid);
@@ -158,53 +158,112 @@ public class GameController : MonoBehaviour {
     }
     #endregion
 
-    public void Harry(string result)
+    public void OnMove(string result)
     {
-        nfcTestText.text = " beginscan";
-        if(myTurn == false)
+        if (myTurn)
         {
-            nfcTestText.text = " niet mijn beurd";
-            return;
-        }
+            int scan;
+            int.TryParse(result, out scan);
 
-        int scan;
-        int.TryParse(result, out scan);
 
-        nfcTestText.text = " scan = " + scan;
-        Incident currentIncident = null;
-        int count = 0;
-        //check voor incident
-        foreach (Incident i in local.incidents)
-        {
-            count++;
-            if(scan == i.tile)
+            //Find tile position in layout
+            if(local.players.list[currentTurn].currentTile == 0)
             {
-                currentIncident = i;
+                local.players.list[currentTurn].currentTile = scan;
+
             }
-        }
-        nfcTestText.text = "asdlkjasdlkajsda     " + count;
-        nfcTestText.text += currentIncident.name;
-        currentIncident.name = "Elephant";
-        if (currentIncident != null)
-        {
-            if (currentIncident.name == "Trap")
+            string playerTile = local.players.list[currentTurn].currentTile.ToString();
+            int currentIndex = local.layout.list.FindIndex(item => item == playerTile);
+            //Calculate possible tiles
+
+            bool moveCorrect = false;
+
+            if (PlayerState.movedIncorrect)
             {
-                endTurn();
+                if (scan == int.Parse(playerTile))
+                {
+                    PlayerState.movedIncorrect = false;
+                    endTurn();
+                }
             }
-            else if (currentIncident.name == "Elephant")
+            else
             {
-                switchPanel(DialogueMid);
-                testText.text = "olievefant";
-                //endTurn();
+                if (currentIndex < 29)
+                {
+                    if (int.Parse(local.layout.list[currentIndex + 1]) == scan)
+                    {
+                        moveCorrect = true;
+                    }
+                }
+                if (currentIndex < 24)
+                {
+                    if (int.Parse(local.layout.list[currentIndex + 6]) == scan)
+                    {
+                        moveCorrect = true;
+                    }
+
+                }
+                if (currentIndex > 0)
+                {
+                    if (int.Parse(local.layout.list[currentIndex - 1]) == scan)
+                    {
+                        moveCorrect = true;
+                    }
+                }
+                if (currentIndex > 5)
+                {
+                    if (int.Parse(local.layout.list[currentIndex - 6]) == scan)
+                    {
+                        moveCorrect = true;
+                    }
+                }
+
+                if (moveCorrect == false)
+                {
+                    PlayerState.movedIncorrect = true;
+                    // show return phone to old place dialogue
+                }
+                else
+                {
+                    // alter currenTile and energy
+                    local.players.list[currentTurn].currentTile = scan;
+                    PlayerState.energy--;
+
+                    //check incidents
+                    Incident currentIncident = null;
+                    //check voor incident
+                    foreach (Incident i in local.incidents)
+                    {
+                        if (scan == i.tile)
+                        {
+                            currentIncident = i;
+                        }
+                    }
+
+                    // If player stepped on an incident
+                    if (currentIncident != null)
+                    {
+                        if (currentIncident.name == "Trap")
+                        {
+                            endTurn();
+                        }
+                        else if (currentIncident.name == "Elephant")
+                        {
+                            switchPanel(DialogueMid);
+                            //endturn in dialoguemid
+                        }
+                    }
+                    // if no incident player can move again
+                }
             }
         }
     }
 
     public void AnimalDance()
     {
-        foreach(Incident i in local.incidents)
+        foreach (Incident i in local.incidents)
         {
-            if(i.name == "Elephant")
+            if (i.name == "Elephant")
             {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);

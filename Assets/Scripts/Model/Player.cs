@@ -5,4 +5,5 @@ public class Player
     public string nickName = "";
     public int vehicle;
     public int hat;
+    public int currentTile;
 }
