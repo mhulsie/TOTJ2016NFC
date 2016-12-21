@@ -26,7 +26,7 @@ public class Board
 
     public Board()
     {
-
+        wrapper.layout = new List<string>();
     }
 
     public void setBoard()
