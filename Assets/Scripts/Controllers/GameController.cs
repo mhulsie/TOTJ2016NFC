@@ -32,6 +32,8 @@ public class GameController : MonoBehaviour
     public LocalLibrary local;
     public bool myTurn = false;
 
+    public Text debugtestText;
+
     // Use this for initialization
     void Start()
     {
@@ -169,11 +171,15 @@ public class GameController : MonoBehaviour
             //Find tile position in layout
             if(local.players.list[currentTurn].currentTile == 0)
             {
+                debugtestText.text = local.players.list[currentTurn].accountID + "";
                 local.players.list[currentTurn].currentTile = scan;
 
             }
             string playerTile = local.players.list[currentTurn].currentTile.ToString();
-            int currentIndex = local.layout.list.FindIndex(item => item == playerTile);
+            int currentIndex = local.layout.layout.IndexOf(playerTile);
+            
+            //int currentIndex = local.layout.list.FindIndex(item => item. == playerTile);
+            debugtestText.text += " currentindex  " + currentIndex + "  playertile is " + playerTile;
             //Calculate possible tiles
 
             bool moveCorrect = false;
@@ -185,46 +191,63 @@ public class GameController : MonoBehaviour
                     PlayerState.movedIncorrect = false;
                     endTurn();
                 }
+                else
+                {
+                    debugtestText.text = " nog steeds foute tegel";
+                }
             }
             else
             {
                 if (currentIndex < 29)
                 {
-                    if (int.Parse(local.layout.list[currentIndex + 1]) == scan)
+                    if (int.Parse(local.layout.layout[currentIndex + 1]) == scan)
                     {
+
+                        debugtestText.text = "goed +1";
+                        local.players.list[currentTurn].currentTile++;
                         moveCorrect = true;
                     }
                 }
                 if (currentIndex < 24)
                 {
-                    if (int.Parse(local.layout.list[currentIndex + 6]) == scan)
+                    if (int.Parse(local.layout.layout[currentIndex + 6]) == scan)
                     {
+                        debugtestText.text = "goed +6";
+                        local.players.list[currentTurn].currentTile = local.players.list[currentTurn].currentTile + 6;
                         moveCorrect = true;
                     }
 
                 }
                 if (currentIndex > 0)
                 {
-                    if (int.Parse(local.layout.list[currentIndex - 1]) == scan)
+                    if (int.Parse(local.layout.layout[currentIndex - 1]) == scan)
                     {
+                        debugtestText.text = "goed -1";
+                        local.players.list[currentTurn].currentTile--;
                         moveCorrect = true;
                     }
                 }
                 if (currentIndex > 5)
                 {
-                    if (int.Parse(local.layout.list[currentIndex - 6]) == scan)
+                    if (int.Parse(local.layout.layout[currentIndex - 6]) == scan)
                     {
+                        debugtestText.text = "goed -6";
+                        local.players.list[currentTurn].currentTile = local.players.list[currentTurn].currentTile - 6;
                         moveCorrect = true;
                     }
                 }
 
+                debugtestText.text = "goed na movecheck voor false check";
                 if (moveCorrect == false)
                 {
+                    debugtestText.text = "verkeerde beweging";
                     PlayerState.movedIncorrect = true;
                     // show return phone to old place dialogue
                 }
                 else
                 {
+
+                    debugtestText.text = "goede 1";
                     // alter currenTile and energy
                     local.players.list[currentTurn].currentTile = scan;
                     PlayerState.energy--;
@@ -232,6 +255,8 @@ public class GameController : MonoBehaviour
                     //check incidents
                     Incident currentIncident = null;
                     //check voor incident
+
+                    debugtestText.text = "goed 2";
                     foreach (Incident i in local.incidents)
                     {
                         if (scan == i.tile)
@@ -239,6 +264,8 @@ public class GameController : MonoBehaviour
                             currentIncident = i;
                         }
                     }
+
+                    debugtestText.text = "goed 3";
 
                     // If player stepped on an incident
                     if (currentIncident != null)
@@ -249,10 +276,17 @@ public class GameController : MonoBehaviour
                         }
                         else if (currentIncident.name == "Elephant")
                         {
-                            switchPanel(DialogueMid);
+                            debugtestText.text = "OLIFANTEN";
+                            //switchPanel(DialogueMid);
                             //endturn in dialoguemid
                         }
                     }
+                    else
+                    {
+                        debugtestText.text = "correcte beweging, ga nog eens";
+                    }
+
+                    debugtestText.text = "goed 4";
                     // if no incident player can move again
                 }
             }

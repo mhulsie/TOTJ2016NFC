@@ -13,7 +13,7 @@ public class LocalLibrary
     public Board board;
 
     [Serializable]
-    public struct layoutWrapper { public List<string> list; };
+    public struct layoutWrapper { public List<string> layout; };
     public layoutWrapper layout;
 
     [Serializable]
@@ -62,11 +62,12 @@ public class LocalLibrary
             }
         }
 
-        board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID = " + RoomState.id));
+        board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID =" + RoomState.id));
 
         players = JsonUtility.FromJson<playerWrapper>(board.players);
 
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
+        Debug.Log(layout.layout[0]);
 
     }
 }
