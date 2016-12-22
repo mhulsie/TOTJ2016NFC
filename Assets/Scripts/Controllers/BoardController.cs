@@ -68,7 +68,7 @@ public class BoardController : MonoBehaviour
 
 
     // Use this for initialization
-    void Start () {
+    void Start() {
 
         players.list = new List<Player>();
         incidents.list = new List<Incident>();
@@ -108,16 +108,16 @@ public class BoardController : MonoBehaviour
 
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnScan");
-        
-        
+
+
 
     }
-	
-	// Update is called once per frame
-	void Update () {
-        
 
-	}
+    // Update is called once per frame
+    void Update() {
+
+
+    }
 
 
     public void OnScan(string result)
@@ -136,15 +136,15 @@ public class BoardController : MonoBehaviour
             {
                 tiles[currentTile].sprite = cave.sprite;
             }
-            else if(scan == 3 || scan == 4 || scan == 5)
+            else if (scan == 3 || scan == 4 || scan == 5)
             {
                 tiles[currentTile].sprite = village.sprite;
             }
-            else if(scan == 6 || scan == 7)
+            else if (scan == 6 || scan == 7)
             {
                 tiles[currentTile].sprite = lake.sprite;
             }
-            else if(scan >= 8 && scan <= 13)
+            else if (scan >= 8 && scan <= 13)
             {
                 tiles[currentTile].sprite = open.sprite;
             }
@@ -159,8 +159,8 @@ public class BoardController : MonoBehaviour
 
             currentTile++;
             board.wrapper.layout.Add(result);
-            
-            if(board.wrapper.layout.Count == 30)
+
+            if (board.wrapper.layout.Count == 30)
             {
                 ready = true;
             }
@@ -172,7 +172,7 @@ public class BoardController : MonoBehaviour
     {
         if (currentTile > 0)
         {
-            tiles[currentTile-1].sprite = defaultImage.sprite;
+            tiles[currentTile - 1].sprite = defaultImage.sprite;
             currentTile--;
 
             string lastItem = board.wrapper.layout[board.wrapper.layout.Count - 1];
@@ -182,11 +182,11 @@ public class BoardController : MonoBehaviour
 
     public void StartGame()
     {
-        if(ready == true)
+        if (ready == true)
         {
 
             #region decidePlayers
-            UnityEngine.Random.InitState((int) System.DateTime.Now.Ticks);
+            UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
             int rand1;
             int rand2;
             int rand3;
@@ -249,15 +249,48 @@ public class BoardController : MonoBehaviour
             Treasure treasure = new Treasure();
             int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out treasure.tile);
             #endregion
-            
+
+            #region crappyLayoutDefault
+            OnScan("11");
+            OnScan("17");
+            OnScan("30");
+            OnScan("5");
+            OnScan("25");
+            OnScan("15");
+            OnScan("28");
+            OnScan("2");
+            OnScan("13");
+            OnScan("18");
+            OnScan("29");
+            OnScan("7");
+            OnScan("14");
+            OnScan("20");
+            OnScan("1");
+            OnScan("24");
+            OnScan("26");
+            OnScan("12");
+            OnScan("4");
+            OnScan("10");
+            OnScan("19");
+            OnScan("9");
+            OnScan("27");
+            OnScan("16");
+            OnScan("21");
+            OnScan("23");
+            OnScan("6");
+            OnScan("22");
+            OnScan("3");
+            OnScan("8");
+            #endregion
+
             #region allToJson
             string layoutJson = JsonUtility.ToJson(board.wrapper);
             string playersJson = JsonUtility.ToJson(players);
             string treasureJson = JsonUtility.ToJson(treasure);
             string incidentsJson = JsonUtility.ToJson(incidents);
             #endregion
-
-            text.text = "INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "','0','" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')";
+            
+            Debug.Log(layoutJson);
             SQL.Instance.getData("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "',0,'" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
             SceneManager.LoadScene("game");
         }

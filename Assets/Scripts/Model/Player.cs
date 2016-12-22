@@ -6,4 +6,5 @@ public class Player
     public int vehicle;
     public int hat;
     public int currentTile;
+    public int currentPosition = -1;
 }
