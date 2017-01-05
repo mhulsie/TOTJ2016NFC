@@ -7,7 +7,6 @@ public class LocalLibrary
 {
     public List<Item> items;
     public List<Quest> quests;
-    public List<Incident> incidents;
     public List<Tile> tiles;
     public List<Status> statusEffects;
     public Board board;
@@ -20,12 +19,15 @@ public class LocalLibrary
     public struct playerWrapper { public List<Player> list; };
     public playerWrapper players;
 
+    [Serializable]
+    public struct incidentWrapper { public List<Incident> list; };
+    public incidentWrapper incidents;
+
 
 
     public LocalLibrary()
     {
         quests = new List<Quest>();
-        incidents = new List<Incident>();
         /*string itemsResult = SQL.Instance.getData("select * from item");
         string[] itemSplitResult = itemsResult.Split('*');
         foreach (string item in itemSplitResult)
@@ -42,7 +44,7 @@ public class LocalLibrary
                 quests.Add(UnityEngine.JsonUtility.FromJson<Quest>(quest));
             }
         }
-        
+
 
         /*string tilesResult = SQL.Instance.getData("select * from tile");
         string[] tileSplitResult = tilesResult.Split('*');
@@ -58,13 +60,14 @@ public class LocalLibrary
             foreach (string incident in incidentSplitResult)
             {
                 Debug.Log(incident);
-                incidents.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
+                incidents.list.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
             }
         }
-
         board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID =" + RoomState.id));
 
         players = JsonUtility.FromJson<playerWrapper>(board.players);
+
+        incidents = JsonUtility.FromJson<incidentWrapper>(board.incidents);
 
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
         Debug.Log(layout.layout[0]);

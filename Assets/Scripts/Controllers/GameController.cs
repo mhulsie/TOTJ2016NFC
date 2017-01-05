@@ -43,20 +43,19 @@ public class GameController : MonoBehaviour
         currentMid = GameMid;
         incidents.list = new List<Incident>();
         local = new LocalLibrary();
-
+        //debugtestText.text = local.incidents.list[0].name;
         PlayerState.energy = 15;
 
         if (RoomState.host == PlayerState.id)
         {
             UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
 
-            foreach (Incident item in local.incidents)
+            foreach (Incident item in local.incidents.list)
             {
                 item.tile = (int)Random.Range(1f, 30f);
             }
-            incidents.list = local.incidents;
             SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
-            SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(incidents) + "' WHERE boardID = " + local.board.boardID);
+            SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
         }
     }
 
@@ -122,11 +121,11 @@ public class GameController : MonoBehaviour
             AnimalDance();
             currentTurn = 0;
         }
-        switchPanel(GameMid);
         myTurn = false;
-        incidents.list = local.incidents;
-        string incidentsJson = JsonUtility.ToJson(incidents);
+        string incidentsJson = JsonUtility.ToJson(local.incidents);
+        debugtestText.text = "UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id;
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
+        switchPanel(GameMid);
     }
 
     public void setTrap()
@@ -163,164 +162,104 @@ public class GameController : MonoBehaviour
     {
         if (myTurn)
         {
+            // Set Values
             int scan;
             int.TryParse(result, out scan);
             int scanPosition = local.layout.layout.IndexOf(scan.ToString());
             int currentPosition = local.players.list[currentTurn].currentPosition;
 
             // If you scan a different tile
-         
-                //Find tile position in layout
-                if (currentPosition == -1)
+
+            //Find tile position in layout
+            if (currentPosition == -1)
+            {
+                currentPosition = local.layout.layout.IndexOf(scan.ToString());
+                PlayerState.validMove = true;
+            }
+            else if (PlayerState.movedIncorrect)
+            {
+                if (scanPosition == currentPosition)
                 {
-                    currentPosition = local.layout.layout.IndexOf(scan.ToString());
+                    PlayerState.movedIncorrect = false;
                     PlayerState.validMove = true;
+                    endTurn();
                 }
-
-                // playerTile = local.players.list[currentTurn].currentTile.ToString();
-                // int currentIndex = local.layout.layout.IndexOf(playerTile);
-
-                debugtestText.text = " 2nd currentposition = " + currentPosition;
-
-                //Calculate possible tiles
-
-                if (PlayerState.movedIncorrect)
+                else
                 {
-                    if (scanPosition == currentPosition)
+                    debugtestText.text = " nog steeds foute tegel";
+                }
+            }
+            else if (currentPosition != scanPosition)
+            {
+                // if modulo 0 niet naar rechts
+                if ((currentPosition + 1) % 6 != 0)
+                {
+                    if (currentPosition + 1 == scanPosition)
                     {
-                        PlayerState.movedIncorrect = false;
-                        endTurn();
-                    }
-                    else
-                    {
-                        debugtestText.text = " nog steeds foute tegel";
+                        debugtestText.text = "goed +1";
+                        PlayerState.validMove = true;
                     }
                 }
-                else if (currentPosition != scanPosition)
+                if (currentPosition < 24)
                 {
-                    // if modulo 0 niet naar rechts
-                    if((currentPosition + 1) % 6 != 0)
+                    if (currentPosition + 6 == scanPosition)
                     {
-                        if (currentPosition + 1 == scanPosition)
-                        {
-                            debugtestText.text = "goed +1";
-                            //local.players.list[currentTurn].currentPosition++;
-                            PlayerState.validMove = true;
-                        }
+                        debugtestText.text = "goed +6";
+                        PlayerState.validMove = true;
                     }
-                    /*if (currentPosition < 29 && (currentPosition + 1 % 6 != 0))
+                }
+                if ((currentPosition + 1) % 6 != 1)
+                {
+                    if (currentPosition - 1 == scanPosition)
                     {
-                        if (currentPosition + 1 == scanPosition)
-                        {
-                            debugtestText.text = "goed +1";
-                            //local.players.list[currentTurn].currentPosition++;
-                            PlayerState.validMove = true;
-                        }
-                    }*/
-                    if (currentPosition < 24)
-                    {
-                        if (currentPosition + 6 == scanPosition)
-                        {
-                            debugtestText.text = "goed +6";
-                            //local.players.list[currentTurn].currentPosition += 6;
-                            PlayerState.validMove = true;
-                        }
+                        debugtestText.text = "goed -1";
+                        PlayerState.validMove = true;
                     }
-                    if ((currentPosition + 1) % 6 != 1)
+                }
+                if (currentPosition > 5)
+                {
+                    if (currentPosition - 6 == scanPosition)
                     {
-                        if (currentPosition - 1 == scanPosition)
-                        {
-                            debugtestText.text = "goed -1";
-                            //local.players.list[currentTurn].currentPosition--;
-                            PlayerState.validMove = true;
-                        }
-                    }
-                    /*if (currentPosition > 0 && (currentPosition + 1 % 6 != 1)) 
-                    {
-                        if (currentPosition - 1 == scanPosition)
-                        {
-                            debugtestText.text = "goed -1";
-                            //local.players.list[currentTurn].currentPosition--;
-                            PlayerState.validMove = true;
-                        }
-                    }*/
-                    if (currentPosition > 5)
-                    {
-                        if (currentPosition - 6 == scanPosition)
-                        {
-                            debugtestText.text = "goed -6";
-                            //local.players.list[currentTurn].currentPosition -= 6;
-                            PlayerState.validMove = true;
-                        }
-                    }
-                    if (!PlayerState.validMove)
-                    {
-                        debugtestText.text = " verkeerde beweging";
-                        PlayerState.movedIncorrect = true;
-                        // show return phone to old place dialogue
-                    }
-                    else
-                    {
-                        debugtestText.text = "goede 1";
-                        // alter currenTile and energy
-                        local.players.list[currentTurn].currentPosition = scanPosition;
-                        PlayerState.energy--;
-                        PlayerState.validMove = false;
-
-                        //check incidents
-                        /*Incident currentIncident = null;
-                        //check voor incident
-
-                        debugtestText.text = "goed 2";
-                        foreach (Incident i in local.incidents)
-                        {
-                            if (scan == i.tile)
-                            {
-                                currentIncident = i;
-                            }
-                        }
-
-                        debugtestText.text = "goed 3";
-
-                        // If player stepped on an incident
-                        if (currentIncident != null)
-                        {
-                            if (currentIncident.name == "Trap")
-                            {
-                                endTurn();
-                            }
-                            else if (currentIncident.name == "Elephant")
-                            {
-                                debugtestText.text = "OLIFANTEN";
-                                //switchPanel(DialogueMid);
-                                //endturn in dialoguemid
-                            }
-                        }
-                        else
-                        {*/
-                        //}
-
-                        //debugtestText.text = "goed 4";
-                        // if no incident player can move again
+                        debugtestText.text = "goed -6";
+                        PlayerState.validMove = true;
                     }
                 }
             }
-            debugtestText.text = "correcte beweging, ga nog eens";
+            else if(currentPosition == scanPosition)
+            {
+                PlayerState.validMove = true;
+            }
+            if (!PlayerState.validMove)
+            {
+                debugtestText.text = " verkeerde beweging";
+                PlayerState.movedIncorrect = true;
+                // show return phone to old place dialogue
+            }
+            else
+            {
+                debugtestText.text = "goede 1";
+                // alter currenTile and energy
+                local.players.list[currentTurn].currentPosition = scanPosition;
+                PlayerState.energy--;
+                PlayerState.validMove = false;
+                debugtestText.text = "correcte beweging, ga nog eens";
+            }
         }
+    }
 
 
     public void AnimalDance()
     {
-        foreach (Incident i in local.incidents)
+        foreach (Incident i in local.incidents.list)
         {
             if (i.name == "Elephant")
             {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
 
-                randomTile = 4;
+                debugtestText.text = i.name;
+                randomTile = 8;
                 i.tile = randomTile;
-
             }
         }
     }

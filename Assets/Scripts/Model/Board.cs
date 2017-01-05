@@ -12,6 +12,7 @@ public class Board
     public int turn;
     public string layout;
     public string players;
+    public string incidents;
 
     [Serializable]
     public struct layoutWrapper { public List<string> layout; };
@@ -20,6 +21,10 @@ public class Board
     [Serializable]
     public struct playerWrapper { public List<Player> list; };
     public playerWrapper playerwrap;
+
+    [Serializable]
+    public struct incidentWrapper { public List<Incident> list; };
+    public incidentWrapper incidentwrap;
 
 
 
