@@ -54,6 +54,8 @@ public class LocalLibrary
         }*/
 
         string incidentsResult = SQL.Instance.getData("select * from incident");
+        incidents.list = new List<Incident>();
+        Debug.Log(incidentsResult);
         if (incidentsResult != "TRUE")
         {
             string[] incidentSplitResult = incidentsResult.Split('*');
@@ -67,7 +69,9 @@ public class LocalLibrary
 
         players = JsonUtility.FromJson<playerWrapper>(board.players);
 
-        incidents = JsonUtility.FromJson<incidentWrapper>(board.incidents);
+        //incidents = JsonUtility.FromJson<incidentWrapper>(board.incidents);
+        Debug.Log("insert qwuery " + "INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
+        SQL.Instance.getData("INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
 
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
         Debug.Log(layout.layout[0]);

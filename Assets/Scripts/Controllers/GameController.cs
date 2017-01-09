@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour
     public GameObject GameMid;
     public GameObject DialogueMid;
     public GameObject MapMid;
+    public GameObject IncidentPopup;
 
     private GameObject currentMid;
 
@@ -34,6 +35,13 @@ public class GameController : MonoBehaviour
 
     public Text debugtestText;
 
+    //Incidnets
+    public Text title;
+    public Text description;
+    public Text incidentBtn;
+    public Image incidentImage;
+    public Image ElephantPlaceHolder;
+
     // Use this for initialization
     void Start()
     {
@@ -41,11 +49,7 @@ public class GameController : MonoBehaviour
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
 
         currentMid = GameMid;
-        incidents.list = new List<Incident>();
         local = new LocalLibrary();
-        //debugtestText.text = local.incidents.list[0].name;
-        PlayerState.energy = 15;
-
         if (RoomState.host == PlayerState.id)
         {
             UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
@@ -65,15 +69,18 @@ public class GameController : MonoBehaviour
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
         Debug.Log(currentTurn);
+        Debug.Log(local.players.list[currentTurn].accountID);
         if (pullTimer > 120 || pullTimer == -1)
         {
             pullTimer = 0;
             if (myTurn != true)
             {
                 int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
+                Debug.Log(local.players.list[currentTurn].accountID);
                 if (PlayerState.id == local.players.list[currentTurn].accountID)
                 {
                     myTurn = true;
+                    debugtestText.text = "Currenturn = " + currentTurn;
                     switchPanel(MoveAction);
                 }
             }
@@ -125,7 +132,7 @@ public class GameController : MonoBehaviour
         string incidentsJson = JsonUtility.ToJson(local.incidents);
         debugtestText.text = "UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id;
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
-        switchPanel(GameMid);
+        
     }
 
     public void setTrap()
@@ -243,6 +250,23 @@ public class GameController : MonoBehaviour
                 PlayerState.energy--;
                 PlayerState.validMove = false;
                 debugtestText.text = "correcte beweging, ga nog eens";
+
+                foreach (Incident i in local.incidents.list)
+                {
+                    if (i.tile == local.players.list[currentTurn].currentPosition)
+                    {
+                        debugtestText.text = i.tile + "      ASDJKASDLKJASLDKJLASKDASD";
+                        switchPanel(IncidentPopup);
+                        if(i.name == "Elephant")
+                        {
+                            incidentImage.sprite = ElephantPlaceHolder.sprite;
+                        }
+
+                        title.text = i.title;
+                        description.text = i.description;
+                        incidentBtn.text = i.button;
+                    }
+                }
             }
         }
     }
@@ -258,7 +282,7 @@ public class GameController : MonoBehaviour
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
 
                 debugtestText.text = i.name;
-                randomTile = 8;
+                randomTile = 29;
                 i.tile = randomTile;
             }
         }
