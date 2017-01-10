@@ -41,10 +41,12 @@ public class GameController : MonoBehaviour
     public Text incidentBtn;
     public Image incidentImage;
     public Image ElephantPlaceHolder;
+    public Incident encounteredIncident;
 
     // Use this for initialization
     void Start()
     {
+        encounteredIncident = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
 
@@ -255,22 +257,40 @@ public class GameController : MonoBehaviour
                 {
                     if (i.tile == local.players.list[currentTurn].currentPosition)
                     {
-                        debugtestText.text = i.tile + "      ASDJKASDLKJASLDKJLASKDASD";
-                        switchPanel(IncidentPopup);
-                        if(i.name == "Elephant")
+                        debugtestText.text = "ROAR het is gelijk aan " + i.name;
+                        if(encounteredIncident == null)
                         {
-                            incidentImage.sprite = ElephantPlaceHolder.sprite;
-                        }
+                            switchPanel(IncidentPopup);
+                            if (i.name == "Elephant")
+                            {
+                                incidentImage.sprite = ElephantPlaceHolder.sprite;
+                            }
 
-                        title.text = i.title;
-                        description.text = i.description;
-                        incidentBtn.text = i.button;
+                            encounteredIncident = i;
+
+                            title.text = i.title;
+                            description.text = i.description;
+                            incidentBtn.text = i.button;
+                        }
                     }
                 }
             }
         }
     }
 
+    public void IncidentOke()
+    {
+        switch (encounteredIncident.action)
+        {
+            case "End":
+                break;
+
+        }
+
+        encounteredIncident = null;
+        switchPanel(GameMid);
+        endTurn();
+    }
 
     public void AnimalDance()
     {
