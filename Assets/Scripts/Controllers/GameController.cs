@@ -44,6 +44,7 @@ public class GameController : MonoBehaviour
     public Incident encounteredIncident;
 
     //Energy Images
+    public Image Energy0;
     public Image Energy1;
     public Image Energy2;
     public Image Energy3;
@@ -67,6 +68,7 @@ public class GameController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        PlayerState.energy = 15;
         encounteredIncident = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
