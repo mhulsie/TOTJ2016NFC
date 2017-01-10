@@ -62,6 +62,14 @@ public class GameController : MonoBehaviour
     public Image Energy15;
     public Image placeholderImage;
 
+    //Map
+    public Image city;
+    public Image cave;
+    public Image village;
+    public Image lake;
+    public Image open;
+    public Image flowers;
+    public Image forest;
 
 
 
@@ -86,6 +94,14 @@ public class GameController : MonoBehaviour
             SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
             SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
         }
+
+        setMap();
+
+        int currentEnergy = PlayerState.energy;
+        GameObject newImageObject = GameObject.Find("Energy" + currentEnergy);
+        Image newImage = newImageObject.GetComponent<Image>();
+
+        placeholderImage.sprite = newImage.sprite;
     }
 
     // Update is called once per frame
@@ -105,7 +121,8 @@ public class GameController : MonoBehaviour
                 if (PlayerState.id == local.players.list[currentTurn].accountID)
                 {
                     myTurn = true;
-                    debugtestText.text = "Currenturn = " + currentTurn;
+                    //debugtestText.text = "Currenturn = " + currentTurn;
+                    //debugtestText.text = local.quests[0].name;
                     switchPanel(MoveAction);
                 }
             }
@@ -118,8 +135,6 @@ public class GameController : MonoBehaviour
         DisplayEnergy();
 
         //Start action panel sequence
-
-        //If last player, animal dance
     }
 
     public void createGameState()
@@ -158,7 +173,7 @@ public class GameController : MonoBehaviour
         }
         myTurn = false;
         string incidentsJson = JsonUtility.ToJson(local.incidents);
-        debugtestText.text = "UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id;
+        debugtestText.text = local.quests[0].name;
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
         
     }
@@ -392,6 +407,44 @@ public class GameController : MonoBehaviour
         } else if (PlayerState.energy > 15)
         {
             PlayerState.energy = 15;
+        }
+    }
+
+    public void setMap()
+    {
+        for (int i = 1; i < 31; i++)
+        {
+            Image tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
+            int current = int.Parse(local.layout.layout[i - 1]);
+            if (current == 1)
+            {
+                tempImage.sprite = city.sprite;
+                debugtestText.text += i;
+            }
+            else if (current == 2)
+            {
+                tempImage.sprite = cave.sprite;
+            }
+            else if (current == 3 || current == 4 || current == 5)
+            {
+                tempImage.sprite = village.sprite;
+            }
+            else if (current == 6 || current == 7)
+            {
+                tempImage.sprite = lake.sprite;
+            }
+            else if (current >= 8 && current <= 13)
+            {
+                tempImage.sprite = open.sprite;
+            }
+            else if (current == 14 || current == 15 || current == 16)
+            {
+                tempImage.sprite = flowers.sprite;
+            }
+            else if (current > 16)
+            {
+                tempImage.sprite = forest.sprite;
+            }
         }
     }
 }

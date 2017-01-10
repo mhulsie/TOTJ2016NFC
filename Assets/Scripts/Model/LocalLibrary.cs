@@ -28,12 +28,6 @@ public class LocalLibrary
     public LocalLibrary()
     {
         quests = new List<Quest>();
-        /*string itemsResult = SQL.Instance.getData("select * from item");
-        string[] itemSplitResult = itemsResult.Split('*');
-        foreach (string item in itemSplitResult)
-        {
-            items.Add(UnityEngine.JsonUtility.FromJson<Item>(item));
-        }*/
 
         string questsResult = SQL.Instance.getData("select * from quest");
         if(questsResult != "TRUE")
