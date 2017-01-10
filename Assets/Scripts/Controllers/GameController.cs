@@ -348,7 +348,7 @@ public class GameController : MonoBehaviour
                 break;
         }
 
-        if (encounteredIncident.action == "Energy+3")
+        if (encounteredIncident.action == "Energy+3" || encounteredIncident.action.Contains("Corner"))
         {
             switchPanel(MoveAction);
         }
