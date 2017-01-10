@@ -127,6 +127,7 @@ public class GameController : MonoBehaviour
         if (currentTurn == local.players.list.Count)
         {
             Debug.Log("DIERENDANS");
+            switchPanel(GameMid);
             AnimalDance();
             currentTurn = 0;
         }
@@ -282,14 +283,60 @@ public class GameController : MonoBehaviour
     {
         switch (encounteredIncident.action)
         {
-            case "End":
+            case "CornerNE":
+                local.players.list[currentTurn].currentPosition = 5;
+                PlayerState.movedIncorrect = true;
+                endTurn();
                 break;
-
+            case "CornerNW":
+                local.players.list[currentTurn].currentPosition = 0;
+                PlayerState.movedIncorrect = true;
+                endTurn();
+                break;
+            case "CornerSE":
+                local.players.list[currentTurn].currentPosition = 29;
+                PlayerState.movedIncorrect = true;
+                endTurn();
+                break;
+            case "CornerSW":
+                local.players.list[currentTurn].currentPosition = 24;
+                PlayerState.movedIncorrect = true;
+                endTurn();
+                break;
+            case "End":
+                endTurn();
+                break;
+            case "Energy-1":
+                PlayerState.energy--;
+                endTurn();
+                break;
+            case "Energy-2":
+                PlayerState.energy--;
+                PlayerState.energy--;
+                endTurn();
+                break;
+            case "Energy-3":
+                PlayerState.energy--;
+                PlayerState.energy--;
+                PlayerState.energy--;
+                endTurn();
+                break;
+            case "Energy+3":
+                PlayerState.energy++;
+                PlayerState.energy++;
+                PlayerState.energy++;
+                break;
         }
 
+        if (encounteredIncident.action == "Energy+3")
+        {
+            switchPanel(MoveAction);
+        }
+        else
+        {
+            switchPanel(GameMid);
+        }
         encounteredIncident = null;
-        switchPanel(GameMid);
-        endTurn();
     }
 
     public void AnimalDance()
@@ -302,7 +349,6 @@ public class GameController : MonoBehaviour
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
 
                 debugtestText.text = i.name;
-                randomTile = 29;
                 i.tile = randomTile;
             }
         }
