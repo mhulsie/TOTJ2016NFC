@@ -6,4 +6,5 @@
     public string description;
     public string button;
     public string result;
+    public string type;
 }

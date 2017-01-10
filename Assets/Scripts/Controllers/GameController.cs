@@ -71,6 +71,11 @@ public class GameController : MonoBehaviour
     public Image flowers;
     public Image forest;
 
+    //Quests
+    public int villageRed;
+    public int villageBlue;
+    public int villageGreen;
+    public Quest encounteredQuest;
 
 
     // Use this for initialization
@@ -78,6 +83,7 @@ public class GameController : MonoBehaviour
     {
         PlayerState.energy = 15;
         encounteredIncident = null;
+        encounteredQuest = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
 
@@ -85,7 +91,7 @@ public class GameController : MonoBehaviour
         local = new LocalLibrary();
         if (RoomState.host == PlayerState.id)
         {
-            UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
+            Random.InitState((int)System.DateTime.Now.Ticks);
 
             foreach (Incident item in local.incidents.list)
             {
@@ -102,6 +108,8 @@ public class GameController : MonoBehaviour
         Image newImage = newImageObject.GetComponent<Image>();
 
         placeholderImage.sprite = newImage.sprite;
+
+        defineCodeQuests();
     }
 
     // Update is called once per frame
@@ -121,8 +129,7 @@ public class GameController : MonoBehaviour
                 if (PlayerState.id == local.players.list[currentTurn].accountID)
                 {
                     myTurn = true;
-                    //debugtestText.text = "Currenturn = " + currentTurn;
-                    //debugtestText.text = local.quests[0].name;
+                    debugtestText.text = "Currenturn = " + currentTurn;
                     switchPanel(MoveAction);
                 }
             }
@@ -162,7 +169,6 @@ public class GameController : MonoBehaviour
 
     public void endTurn()
     {
-
         currentTurn++;
         if (currentTurn == local.players.list.Count)
         {
@@ -185,7 +191,25 @@ public class GameController : MonoBehaviour
 
     public void getQuest()
     {
-
+        //3 blue
+        if(local.players.list[currentTurn].currentPosition == villageBlue)
+        {
+            encounteredQuest = PlayerState.blueQuest;
+        }
+        //4 red
+        else if (local.players.list[currentTurn].currentPosition == villageRed)
+        {
+            encounteredQuest = PlayerState.redQuest;
+        }
+        //5 green
+        else if (local.players.list[currentTurn].currentPosition == villageGreen)
+        {
+            encounteredQuest = PlayerState.greenQuest;
+        }
+        if(encounteredQuest != null)
+        {
+            switchPanel(IncidentPopup);
+        }
     }
 
     public void doQuest()
@@ -321,57 +345,107 @@ public class GameController : MonoBehaviour
 
     public void IncidentOke()
     {
-        switch (encounteredIncident.action)
+        if(encounteredIncident != null)
         {
-            case "CornerNE":
-                local.players.list[currentTurn].currentPosition = 5;
-                PlayerState.movedIncorrect = true;
-                endTurn();
-                break;
-            case "CornerNW":
-                local.players.list[currentTurn].currentPosition = 0;
-                PlayerState.movedIncorrect = true;
-                endTurn();
-                break;
-            case "CornerSE":
-                local.players.list[currentTurn].currentPosition = 29;
-                PlayerState.movedIncorrect = true;
-                endTurn();
-                break;
-            case "CornerSW":
-                local.players.list[currentTurn].currentPosition = 24;
-                PlayerState.movedIncorrect = true;
-                endTurn();
-                break;
-            case "End":
-                endTurn();
-                break;
-            case "Energy-1":
-                changeEnergy(-1);
-                endTurn();
-                break;
-            case "Energy-2":
-                changeEnergy(-2);
-                endTurn();
-                break;
-            case "Energy-3":
-                changeEnergy(-3);
-                endTurn();
-                break;
-            case "Energy+3":
-                changeEnergy(3);
-                break;
+            switch (encounteredIncident.action)
+            {
+                case "CornerNE":
+                    local.players.list[currentTurn].currentPosition = 5;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerNW":
+                    local.players.list[currentTurn].currentPosition = 0;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerSE":
+                    local.players.list[currentTurn].currentPosition = 29;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerSW":
+                    local.players.list[currentTurn].currentPosition = 24;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "End":
+                    endTurn();
+                    break;
+                case "Energy-1":
+                    changeEnergy(-1);
+                    endTurn();
+                    break;
+                case "Energy-2":
+                    changeEnergy(-2);
+                    endTurn();
+                    break;
+                case "Energy-3":
+                    changeEnergy(-3);
+                    endTurn();
+                    break;
+                case "Energy+3":
+                    changeEnergy(3);
+                    break;
+            }
+            if (encounteredIncident.action == "Energy+3" || encounteredIncident.action.Contains("Corner"))
+            {
+                switchPanel(MoveAction);
+            }
+            else
+            {
+                switchPanel(GameMid);
+            }
+            encounteredIncident = null;
+        }
+        else if(encounteredQuest != null)
+        {
+            title.text = encounteredQuest.title;
+            description.text = encounteredQuest.description;
+            incidentBtn.text = encounteredQuest.button;
+
+            int tempQuest;
+            if(int.TryParse(encounteredQuest.result, out tempQuest))
+            {
+                if (encounteredQuest == PlayerState.blueQuest)
+                {
+                    PlayerState.blueQuest = local.quests[tempQuest];
+                }
+                else if (encounteredQuest == PlayerState.redQuest)
+                {
+                    PlayerState.redQuest = local.quests[tempQuest];
+                }
+                else if (encounteredQuest == PlayerState.greenQuest)
+                {
+                    PlayerState.greenQuest = local.quests[tempQuest];
+                }
+                else if (encounteredQuest == PlayerState.energyQuest)
+                {
+                    PlayerState.energyQuest = local.quests[tempQuest];
+                }
+            }
+            else
+            {
+                if(encounteredQuest.type == "blue")
+                {
+                    PlayerState.blueQuest = null;
+                }
+                else if(encounteredQuest.type == "red")
+                {
+                    PlayerState.redQuest = null;
+                }
+                else if(encounteredQuest.type == "green")
+                {
+                    PlayerState.greenQuest = null;
+                }
+                else if(encounteredQuest.type == "energy")
+                {
+                    //TODO add energy reward
+                    PlayerState.energyQuest = null;
+                }
+            }
         }
 
-        if (encounteredIncident.action == "Energy+3" || encounteredIncident.action.Contains("Corner"))
-        {
-            switchPanel(MoveAction);
-        }
-        else
-        {
-            switchPanel(GameMid);
-        }
-        encounteredIncident = null;
     }
 
     public void AnimalDance()
@@ -428,6 +502,16 @@ public class GameController : MonoBehaviour
             else if (current == 3 || current == 4 || current == 5)
             {
                 tempImage.sprite = village.sprite;
+                if(current == 3)
+                {
+                    villageBlue = i - 1;
+                } else if(current == 4)
+                {
+                    villageRed = i - 1;
+                } else if(current == 5)
+                {
+                    villageGreen = i - 1;
+                }
             }
             else if (current == 6 || current == 7)
             {
@@ -446,5 +530,12 @@ public class GameController : MonoBehaviour
                 tempImage.sprite = forest.sprite;
             }
         }
+    }
+
+    public void defineCodeQuests()
+    {
+        PlayerState.blueQuest = local.blueQuests[(int)Random.Range(1f, local.blueQuests.Count) -1];
+        PlayerState.redQuest = local.redQuests[(int)Random.Range(1f, local.redQuests.Count) - 1];
+        PlayerState.greenQuest = local.greenQuests[(int)Random.Range(1f, local.greenQuests.Count) - 1];        
     }
 }

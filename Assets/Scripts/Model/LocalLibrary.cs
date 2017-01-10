@@ -7,6 +7,9 @@ public class LocalLibrary
 {
     public List<Item> items;
     public List<Quest> quests;
+    public List<Quest> blueQuests;
+    public List<Quest> redQuests;
+    public List<Quest> greenQuests;
     public List<Tile> tiles;
     public List<Status> statusEffects;
     public Board board;
@@ -28,34 +31,64 @@ public class LocalLibrary
     public LocalLibrary()
     {
         quests = new List<Quest>();
+        redQuests = new List<Quest>();
+        blueQuests = new List<Quest>();
+        greenQuests = new List<Quest>();
 
         string questsResult = SQL.Instance.getData("select * from quest");
+        Debug.Log(questsResult);
         if(questsResult != "TRUE")
         {
             string[] questSplitResult = questsResult.Split('*');
             foreach (string quest in questSplitResult)
             {
-                quests.Add(UnityEngine.JsonUtility.FromJson<Quest>(quest));
+                Debug.Log(quest);
+                quests.Add(JsonUtility.FromJson<Quest>(quest));
+            }
+        }
+        Quest tempQuest = new Quest();
+        foreach (Quest item in quests)
+        {
+            //Kijk of het een start quest is
+            if (item.name.Contains("Start"))
+            {
+                Debug.Log(item.questID);
+                int tryParseInt;
+                // Kijk naar de opvolgende quest
+                if(int.TryParse(item.result, out tryParseInt))
+                {
+                    //Pak de volgende quest
+                    tempQuest = quests[tryParseInt - 1];
+                    //Indien er nog een volgende quest is
+                    if(int.TryParse(tempQuest.result, out tryParseInt))
+                    {
+                        //pak de kleurcode
+                        tempQuest = quests[tryParseInt - 1];
+                    }
+                }
+
+                if(tempQuest.result == "blue")
+                {
+                    blueQuests.Add(item);
+                }
+                else if(tempQuest.result == "red")
+                {
+                    redQuests.Add(item);
+                }
+                else if(tempQuest.result == "green")
+                {
+                    greenQuests.Add(item);
+                }
             }
         }
 
-
-        /*string tilesResult = SQL.Instance.getData("select * from tile");
-        string[] tileSplitResult = tilesResult.Split('*');
-        foreach (string tile in tileSplitResult)
-        {
-            tiles.Add(UnityEngine.JsonUtility.FromJson<Tile>(tile));
-        }*/
-
         string incidentsResult = SQL.Instance.getData("select * from incident");
         incidents.list = new List<Incident>();
-        Debug.Log(incidentsResult);
         if (incidentsResult != "TRUE")
         {
             string[] incidentSplitResult = incidentsResult.Split('*');
             foreach (string incident in incidentSplitResult)
             {
-                Debug.Log(incident);
                 incidents.list.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
             }
         }
