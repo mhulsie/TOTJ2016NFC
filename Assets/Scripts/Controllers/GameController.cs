@@ -275,7 +275,7 @@ public class GameController : MonoBehaviour
                 debugtestText.text = "goede 1";
                 // alter currenTile and energy
                 local.players.list[currentTurn].currentPosition = scanPosition;
-                PlayerState.energy--;
+                changeEnergy(-1);
                 PlayerState.validMove = false;
                 debugtestText.text = "correcte beweging, ga nog eens";
 
@@ -332,24 +332,19 @@ public class GameController : MonoBehaviour
                 endTurn();
                 break;
             case "Energy-1":
-                PlayerState.energy--;
+                changeEnergy(-1);
                 endTurn();
                 break;
             case "Energy-2":
-                PlayerState.energy--;
-                PlayerState.energy--;
+                changeEnergy(-2);
                 endTurn();
                 break;
             case "Energy-3":
-                PlayerState.energy--;
-                PlayerState.energy--;
-                PlayerState.energy--;
+                changeEnergy(-3);
                 endTurn();
                 break;
             case "Energy+3":
-                PlayerState.energy++;
-                PlayerState.energy++;
-                PlayerState.energy++;
+                changeEnergy(3);
                 break;
         }
 
@@ -386,5 +381,10 @@ public class GameController : MonoBehaviour
         Image newImage = newImageObject.GetComponent<Image>();
 
         placeholderImage.sprite = newImage.sprite;
+    }
+
+    public void changeEnergy(int points)
+    {
+        PlayerState.energy += points;
     }
 }
