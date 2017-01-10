@@ -386,5 +386,12 @@ public class GameController : MonoBehaviour
     public void changeEnergy(int points)
     {
         PlayerState.energy += points;
+        if(PlayerState.energy < 0)
+        {
+            PlayerState.energy = 0;
+        } else if (PlayerState.energy > 15)
+        {
+            PlayerState.energy = 15;
+        }
     }
 }
