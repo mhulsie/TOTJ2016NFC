@@ -43,6 +43,27 @@ public class GameController : MonoBehaviour
     public Image ElephantPlaceHolder;
     public Incident encounteredIncident;
 
+    //Energy Images
+    public Image Energy1;
+    public Image Energy2;
+    public Image Energy3;
+    public Image Energy4;
+    public Image Energy5;
+    public Image Energy6;
+    public Image Energy7;
+    public Image Energy8;
+    public Image Energy9;
+    public Image Energy10;
+    public Image Energy11;
+    public Image Energy12;
+    public Image Energy13;
+    public Image Energy14;
+    public Image Energy15;
+    public Image placeholderImage;
+
+
+
+
     // Use this for initialization
     void Start()
     {
@@ -91,6 +112,8 @@ public class GameController : MonoBehaviour
         {
             pullTimer++;
         }
+
+        DisplayEnergy();
 
         //Start action panel sequence
 
@@ -306,5 +329,14 @@ public class GameController : MonoBehaviour
                 i.tile = randomTile;
             }
         }
+    }
+
+    public void DisplayEnergy()
+    {
+        int currentEnergy = PlayerState.energy;
+        GameObject newImageObject = GameObject.Find("Energy" + currentEnergy);
+        Image newImage = newImageObject.GetComponent<Image>();
+
+        placeholderImage.sprite = newImage.sprite;
     }
 }
