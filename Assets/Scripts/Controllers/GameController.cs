@@ -101,7 +101,9 @@ public class GameController : MonoBehaviour
             SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
         }
 
+        MapMid.SetActive(true);
         setMap();
+        MapMid.SetActive(false);
 
         int currentEnergy = PlayerState.energy;
         GameObject newImageObject = GameObject.Find("Energy" + currentEnergy);
@@ -325,14 +327,13 @@ public class GameController : MonoBehaviour
                         debugtestText.text = "ROAR het is gelijk aan " + i.name;
                         if(encounteredIncident == null)
                         {
+                            encounteredIncident = i;
+
                             switchPanel(IncidentPopup);
                             if (i.name == "Elephant")
                             {
                                 incidentImage.sprite = ElephantPlaceHolder.sprite;
                             }
-
-                            encounteredIncident = i;
-
                             title.text = i.title;
                             description.text = i.description;
                             incidentBtn.text = i.button;
