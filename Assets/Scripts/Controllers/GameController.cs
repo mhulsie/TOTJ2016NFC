@@ -100,8 +100,7 @@ public class GameController : MonoBehaviour
             SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
             SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
         }
-
-        MapMid.SetActive(true);
+        
         setMap();
         MapMid.SetActive(false);
 
@@ -212,25 +211,6 @@ public class GameController : MonoBehaviour
         {
             switchPanel(IncidentPopup);
         }
-    }
-
-    public void doQuest()
-    {
-
-    }
-    public void reportQuest()
-    {
-
-    }
-
-    public void steal()
-    {
-
-    }
-
-    public void digTreasure()
-    {
-
     }
     #endregion
 
@@ -446,7 +426,6 @@ public class GameController : MonoBehaviour
                 }
             }
         }
-
     }
 
     public void AnimalDance()
