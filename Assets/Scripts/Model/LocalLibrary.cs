@@ -31,9 +31,6 @@ public class LocalLibrary
     public LocalLibrary()
     {
         quests = new List<Quest>();
-        redQuests = new List<Quest>();
-        blueQuests = new List<Quest>();
-        greenQuests = new List<Quest>();
 
         string questsResult = SQL.Instance.getData("select * from quest");
         Debug.Log(questsResult);
@@ -44,41 +41,6 @@ public class LocalLibrary
             {
                 Debug.Log(quest);
                 quests.Add(JsonUtility.FromJson<Quest>(quest));
-            }
-        }
-        Quest tempQuest = new Quest();
-        foreach (Quest item in quests)
-        {
-            //Kijk of het een start quest is
-            if (item.name.Contains("Start"))
-            {
-                Debug.Log(item.questID);
-                int tryParseInt;
-                // Kijk naar de opvolgende quest
-                if(int.TryParse(item.result, out tryParseInt))
-                {
-                    //Pak de volgende quest
-                    tempQuest = quests[tryParseInt - 1];
-                    //Indien er nog een volgende quest is
-                    if(int.TryParse(tempQuest.result, out tryParseInt))
-                    {
-                        //pak de kleurcode
-                        tempQuest = quests[tryParseInt - 1];
-                    }
-                }
-
-                if(tempQuest.result == "blue")
-                {
-                    blueQuests.Add(item);
-                }
-                else if(tempQuest.result == "red")
-                {
-                    redQuests.Add(item);
-                }
-                else if(tempQuest.result == "green")
-                {
-                    greenQuests.Add(item);
-                }
             }
         }
 
@@ -95,8 +57,7 @@ public class LocalLibrary
         board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID =" + RoomState.id));
 
         players = JsonUtility.FromJson<playerWrapper>(board.players);
-
-        //incidents = JsonUtility.FromJson<incidentWrapper>(board.incidents);
+        
         Debug.Log("insert qwuery " + "INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
         SQL.Instance.getData("INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
 
