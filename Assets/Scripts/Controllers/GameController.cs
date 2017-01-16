@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour
     public GameObject MapMid;
     public GameObject IncidentPopup;
 
-    private GameObject currentMid;
+    //private GameObject currentMid;
 
     [System.Serializable]
     public struct playerWrapper { public List<Player> list; };
@@ -85,7 +85,7 @@ public class GameController : MonoBehaviour
     public List<int> positionBirds;
     public List<int> positionPlants;
     public Quest encounteredQuest;
-    public Quest tempQuest = new Quest();
+    public Quest tempQuest;
     public Dialogue tempDialogue = new Dialogue();
 
 
@@ -104,7 +104,7 @@ public class GameController : MonoBehaviour
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
 
-        currentMid = GameMid;
+        //currentMid = GameMid;
         local = new LocalLibrary();
         if (RoomState.host == PlayerState.id)
         {
@@ -230,6 +230,7 @@ public class GameController : MonoBehaviour
         //checkQuest(eq, currentPosition);
 
         currentTurnTExt.text += "      tempquest " + tempQuest.type + "   progress   " + tempQuest.progress;
+        debugtestText.text = " IK DOE HET NIET";
         if(tempQuest != null)
         {
             if(tempQuest.progress == 0)
@@ -274,7 +275,59 @@ public class GameController : MonoBehaviour
         {
             SceneManager.LoadScene("main");
         }
-        else if(tempQuest != null)
+        else if(encounteredIncident != null){
+            switch (encounteredIncident.action)
+            {
+                case "CornerNE":
+                    local.players.list[currentTurn].currentPosition = 5;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerNW":
+                    local.players.list[currentTurn].currentPosition = 0;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerSE":
+                    local.players.list[currentTurn].currentPosition = 29;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "CornerSW":
+                    local.players.list[currentTurn].currentPosition = 24;
+                    PlayerState.movedIncorrect = true;
+                    endTurn();
+                    break;
+                case "End":
+                    endTurn();
+                    break;
+                case "Energy-1":
+                    changeEnergy(-1);
+                    endTurn();
+                    break;
+                case "Energy-2":
+                    changeEnergy(-2);
+                    endTurn();
+                    break;
+                case "Energy-3":
+                    changeEnergy(-3);
+                    endTurn();
+                    break;
+                case "Energy+3":
+                    changeEnergy(3);
+                    break;
+            }
+            if (encounteredIncident.action == "Energy+3" || encounteredIncident.action.Contains("Corner"))
+            {
+                IncidentPopup.SetActive(false);
+            }
+            else
+            {
+                endTurn();
+            }
+            encounteredIncident = null;
+        }
+        else if (tempQuest != null)
         {
             advanceProgress();
             endTurn();
@@ -509,30 +562,24 @@ public class GameController : MonoBehaviour
                 PlayerState.validMove = false;
                 debugtestText.text = "correcte beweging, ga nog eens";
 
-               /* foreach (Incident i in local.incidents.list)
+                foreach (Incident i in local.incidents.list)
                 {
                     if (i.tile == local.players.list[currentTurn].currentPosition)
                     {
                         debugtestText.text = "ROAR het is gelijk aan " + i.name;
-                        if(encounteredIncident == null)
-                        {
-                            encounteredIncident = i;
+                        encounteredIncident = i;
 
-                            IncidentPopup.SetActive(true);
-                            if (i.name == "Elephant")
-                            {
-                                incidentImage.sprite = ElephantPlaceHolder.sprite;
-                            }
-                            title.text = i.title;
-                            description.text = i.description;
-                            incidentBtn.text = i.button;
-                        }
+                        tempDialogue.title = encounteredIncident.title;
+                        tempDialogue.description = encounteredIncident.description;
+                        tempDialogue.button = encounteredIncident.button;
+                        tempDialogue.image = "Elephant";
+                        togglePopUp();
                     }
-                }*/
+                }
             }
         }
     }
-
+    /*
     public void IncidentOke()
     {
         if(encounteredIncident != null)
@@ -589,7 +636,7 @@ public class GameController : MonoBehaviour
             encounteredIncident = null;
         }
     }
-
+    */
     public void AnimalDance()
     {
         foreach (Incident i in local.incidents.list)
