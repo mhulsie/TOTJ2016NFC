@@ -159,12 +159,19 @@ public class GameController : MonoBehaviour
             if (PlayerState.id == local.players.list[currentTurn].accountID)
             {
                 currentTurnTExt.text = "hier ook";
-                myTurn = true;
-                currentTurnTExt.text = "myturn  " + myTurn.ToString();
-                debugtestText.text = "Currenturn = " + currentTurn;
-                currentTurnTExt.text = "hier ook 2";
-                MoveAction.SetActive(true);
-                currentTurnTExt.text = "hier ook 3";
+                if (PlayerState.energy == 0)
+                {
+                    tempDialogue.title = "Benzine op";
+                    tempDialogue.description = "Oh nee, je brandstof is op.";
+                    tempDialogue.button = "Beeindig beurt";
+                    tempDialogue.image = "Elephant";
+                    togglePopUp();
+                }
+                else
+                {
+                    myTurn = true;
+                    MoveAction.SetActive(true);
+                }
             }
         }
 
@@ -283,43 +290,34 @@ public class GameController : MonoBehaviour
         {
             SceneManager.LoadScene("main");
         }
-        else if(encounteredIncident != null){
+        else if(encounteredIncident != null)
+        {
             switch (encounteredIncident.action)
             {
                 case "CornerNE":
                     local.players.list[currentTurn].currentPosition = 5;
                     PlayerState.movedIncorrect = true;
-                    endTurn();
                     break;
                 case "CornerNW":
                     local.players.list[currentTurn].currentPosition = 0;
                     PlayerState.movedIncorrect = true;
-                    endTurn();
                     break;
                 case "CornerSE":
                     local.players.list[currentTurn].currentPosition = 29;
                     PlayerState.movedIncorrect = true;
-                    endTurn();
                     break;
                 case "CornerSW":
                     local.players.list[currentTurn].currentPosition = 24;
                     PlayerState.movedIncorrect = true;
-                    endTurn();
-                    break;
-                case "End":
-                    endTurn();
                     break;
                 case "Energy-1":
                     changeEnergy(-1);
-                    endTurn();
                     break;
                 case "Energy-2":
                     changeEnergy(-2);
-                    endTurn();
                     break;
                 case "Energy-3":
                     changeEnergy(-3);
-                    endTurn();
                     break;
                 case "Energy+3":
                     changeEnergy(3);
@@ -338,6 +336,10 @@ public class GameController : MonoBehaviour
         else if (tempQuest != null)
         {
             advanceProgress();
+            endTurn();
+        }
+        else if (PlayerState.energy == 0)
+        {
             endTurn();
         }
         else
@@ -487,7 +489,7 @@ public class GameController : MonoBehaviour
 
     public void OnMove(string result)
     {
-        if (myTurn && PlayerState.energy != 0)
+        if (myTurn)
         {
             // Set Values
             int scan;
@@ -515,7 +517,7 @@ public class GameController : MonoBehaviour
                     debugtestText.text = " nog steeds foute tegel";
                 }
             }
-            else if (currentPosition != scanPosition)
+            else if (currentPosition != scanPosition && PlayerState.energy > 0)
             {
                 // if modulo 0 niet naar rechts
                 if ((currentPosition + 1) % 6 != 0)
@@ -551,17 +553,17 @@ public class GameController : MonoBehaviour
                     }
                 }
             }
-            else if (currentPosition == scanPosition)
+            else if (currentPosition == scanPosition && PlayerState.energy > 0)
             {
                 PlayerState.validMove = true;
             }
-            if (!PlayerState.validMove)
+            if (!PlayerState.validMove && PlayerState.energy > 0)
             {
                 debugtestText.text = " verkeerde beweging";
                 PlayerState.movedIncorrect = true;
                 // show return phone to old place dialogue
             }
-            else
+            else if (PlayerState.validMove && PlayerState.energy > 0)
             {
                 debugtestText.text = "goede 1";
                 // alter currenTile and energy
@@ -585,7 +587,11 @@ public class GameController : MonoBehaviour
                 }
                 if (PlayerState.energy == 0)
                 {
-                    debugtestText.text = "correcte beweging, je energie is nu op";
+                    tempDialogue.title = "Benzine op";
+                    tempDialogue.description = "Oh nee, je brandstof is op.";
+                    tempDialogue.button = "Beeindig beurt";
+                    tempDialogue.image = "Elephant";
+                    togglePopUp();
                 }
                 else
                 {
