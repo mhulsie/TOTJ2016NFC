@@ -13,6 +13,8 @@ public class Board
     public string layout;
     public string players;
     public string incidents;
+    public string treasure;
+    public Treasure treasureT;
 
     [Serializable]
     public struct layoutWrapper { public List<string> layout; };

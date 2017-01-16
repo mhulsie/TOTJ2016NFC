@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class GameController : MonoBehaviour
     public bool myTurn = false;
 
     public Text debugtestText;
+    public Text currentTurnTExt;
 
     //Incidnets
     public Text title;
@@ -124,40 +126,48 @@ public class GameController : MonoBehaviour
         Image newImage = newImageObject.GetComponent<Image>();
 
         placeholderImage.sprite = newImage.sprite;
-
-        Debug.Log("voor quest definition");
+        
         defineCodeQuests();
-        Debug.Log("na quest definition");
+        PlayerState.blueQuest.progress = 3;
+        PlayerState.redQuest.progress = 3;
+        PlayerState.greenQuest.progress = 3;
     }
 
     // Update is called once per frame
     void Update()
     {
+        currentTurnTExt.text = "test1234";
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
-        Debug.Log(currentTurn);
-        Debug.Log(local.players.list[currentTurn].accountID);
 
-        DisplayEnergy();
-        if (pullTimer > 120 || pullTimer == -1)
+        //DisplayEnergy();
+        pullTimer++;
+        currentTurnTExt.text = pullTimer.ToString();
+        if ((pullTimer > 120 || pullTimer == -1) && !myTurn)
         {
+            currentTurnTExt.text = "test5678";
+
             pullTimer = 0;
-            if (myTurn != true)
+            int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
+            if(currentTurn == 100)
             {
-                int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
-                Debug.Log(local.players.list[currentTurn].accountID);
-                if (PlayerState.id == local.players.list[currentTurn].accountID)
-                {
-                    myTurn = true;
-                    debugtestText.text = "Currenturn = " + currentTurn;
-                    MoveAction.SetActive(true);
-                    local.players.list[0].currentPosition = 28;
-                }
+                tempDialogue.title = "Te laat";
+                tempDialogue.description = "Ai, een van je tegenstanders heeft de schat al gevonden. Helaas je verliest het spel.";
+                tempDialogue.button = "Ga naar het hoofdmenu";
+                tempDialogue.image = "TreasureL";
+
             }
-        }
-        else
-        {
-            pullTimer++;
+            currentTurnTExt.text = "ik heb het board";
+            if (PlayerState.id == local.players.list[currentTurn].accountID)
+            {
+                currentTurnTExt.text = "hier ook";
+                myTurn = true;
+                currentTurnTExt.text = "myturn  " + myTurn.ToString();
+                debugtestText.text = "Currenturn = " + currentTurn;
+                currentTurnTExt.text = "hier ook 2";
+                MoveAction.SetActive(true);
+                currentTurnTExt.text = "hier ook 3";
+            }
         }
 
         //Start action panel sequence
@@ -179,85 +189,31 @@ public class GameController : MonoBehaviour
     }
 
     #region ActionPanels
-    /*public void switchPanel(GameObject panel)
-    {
-        currentMid.gameObject.SetActive(false);
-        currentMid = panel;
-        panel.gameObject.SetActive(true);
-    }*/
 
     public void endTurn()
     {
         currentTurn++;
         if (currentTurn == local.players.list.Count)
         {
-            Debug.Log("DIERENDANS");
-            MoveAction.SetActive(false);
             AnimalDance();
             currentTurn = 0;
         }
+        MoveAction.SetActive(false);
+        IncidentPopup.SetActive(false);
+        ChooseAction.SetActive(false);
+        MapMid.SetActive(false);
+        GameMid.SetActive(true);
+
+        currentTurnTExt.text += "   myturn in end " + myTurn.ToString();
         myTurn = false;
+        currentTurnTExt.text += "   myturn after end " + myTurn.ToString();
         string incidentsJson = JsonUtility.ToJson(local.incidents);
+        currentTurnTExt.text = "1";
         debugtestText.text = local.quests[0].name;
+        currentTurnTExt.text = "2";
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
+        currentTurnTExt.text = "3";
     }
-
-    public void setTrap()
-    {
-
-    }
-
-    /*public void getQuest()
-    {
-        //3 blue
-        if(local.players.list[currentTurn].currentPosition == positionVillageBlue && PlayerState.blueQuest.tile == -1)
-        {
-            encounteredQuest = PlayerState.blueQuest;
-        }
-        //4 red
-        else if (local.players.list[currentTurn].currentPosition == positionVillageRed && PlayerState.redQuest.tile == -1)
-        {
-            encounteredQuest = PlayerState.redQuest;
-        }
-        //5 green
-        else if (local.players.list[currentTurn].currentPosition == positionVillageGreen && PlayerState.greenQuest.tile == -1)
-        {
-            encounteredQuest = PlayerState.greenQuest;
-        }
-        else
-        {
-            //TODO add popup stating quest you have to do
-        }
-        if(encounteredQuest != null)
-        {
-            switchPanel(IncidentPopup);
-        }
-    }
-
-    public void doQuest()
-    {
-        if(local.players.list[currentTurn].currentPosition == PlayerState.blueQuest.tile)
-        {
-            encounteredQuest = PlayerState.blueQuest;
-        }
-        else if (local.players.list[currentTurn].currentPosition == PlayerState.redQuest.tile)
-        {
-            encounteredQuest = PlayerState.redQuest;
-        }
-        else if (local.players.list[currentTurn].currentPosition == PlayerState.greenQuest.tile)
-        {
-            encounteredQuest = PlayerState.greenQuest;
-        }
-        else
-        {
-            //TODO message stating you dont have a quest here
-        }
-
-        if(encounteredQuest != null)
-        {
-            switchPanel(IncidentPopup);
-        }
-    }*/
     #endregion
 
     public void questBtn()
@@ -269,13 +225,14 @@ public class GameController : MonoBehaviour
         Quest bq = PlayerState.blueQuest;
         Quest rq = PlayerState.redQuest;
         Quest gq = PlayerState.greenQuest;
-        Quest eq = PlayerState.energyQuest;
+        //Quest eq = PlayerState.energyQuest;
 
         checkQuest(bq, currentPosition);
         checkQuest(rq, currentPosition);
         checkQuest(gq, currentPosition);
         //checkQuest(eq, currentPosition);
 
+        currentTurnTExt.text += "      tempquest " + tempQuest.type + "   progress   " + tempQuest.progress;
         if(tempQuest != null)
         {
             if(tempQuest.progress == 0)
@@ -299,7 +256,7 @@ public class GameController : MonoBehaviour
     {
         if (c == q.startPosition && q.progress == 0 ||
             c == q.doPosition && q.progress == 1 ||
-            c == q.turnInPosition && q.progress == 2 && q.turnInPoint != "")
+            c == q.turnInPosition && q.progress == 2)
         {
             tempQuest = q;
         }
@@ -311,26 +268,24 @@ public class GameController : MonoBehaviour
         title.text = tempDialogue.title;
         description.text = tempDialogue.description;
         incidentBtn.text = tempDialogue.button;
+        incidentImage.sprite = GameObject.Find(tempDialogue.image).GetComponent<Image>().sprite;
     }
 
     public void popUpBtn()
     {
-        if(tempQuest != null)
+        if(tempDialogue.image == "Treasure" || tempDialogue.image == "TreasureL")
+        {
+            SceneManager.LoadScene("main");
+        }
+        else if(tempQuest != null)
         {
             advanceProgress();
-            if (tempDialogue.button == "Kijk op kaart")
-            {
-                questCheckMap(true);
-            }
-            IncidentPopup.SetActive(false);
-            ChooseAction.SetActive(false);
             endTurn();
         }
         else
         {
-            IncidentOke();
+            GameMid.SetActive(false);
         }
-
     }
 
     public void advanceProgress()
@@ -338,9 +293,10 @@ public class GameController : MonoBehaviour
         if(tempQuest == PlayerState.blueQuest)
         {
             PlayerState.blueQuest.progress++;
+            currentTurnTExt.text += "    progress after   " + PlayerState.blueQuest.progress;
             if(PlayerState.blueQuest.progress == 2)
             {
-                if (PlayerState.blueQuest.turnInPoint == "")
+                if (PlayerState.blueQuest.turnInPoint == null)
                 {
                     PlayerState.blueQuest.progress = 3;
                 }
@@ -351,7 +307,7 @@ public class GameController : MonoBehaviour
             PlayerState.redQuest.progress++;
             if (PlayerState.redQuest.progress == 2)
             {
-                if (PlayerState.redQuest.turnInPoint == "")
+                if (PlayerState.redQuest.turnInPoint == null)
                 {
                     PlayerState.redQuest.progress = 3;
                 }
@@ -362,7 +318,7 @@ public class GameController : MonoBehaviour
             PlayerState.greenQuest.progress++;
             if (PlayerState.greenQuest.progress == 2)
             {
-                if (PlayerState.greenQuest.turnInPoint == "")
+                if (PlayerState.greenQuest.turnInPoint == null)
                 {
                     PlayerState.greenQuest.progress = 3;
                 }
@@ -398,37 +354,77 @@ public class GameController : MonoBehaviour
         ChooseAction.SetActive(false);
     }
 
+    public void digTreasure()
+    {
+        debugtestText.text = "I pressed treasure totale progress " + (PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) + "huidige pos = " + local.players.list[currentTurn].currentPosition + " treasrepos " + local.board.treasureT.tile; 
+        if((PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) == 9 && local.players.list[currentTurn].currentPosition == local.board.treasureT.tile)
+        {
+            MoveAction.SetActive(false);
+            ChooseAction.SetActive(false);
+            MapMid.SetActive(false);
+            //Show win dialogue
+            tempDialogue.title = "Je hebt de schat gevonden";
+            tempDialogue.description = "Hoera! Je hebt de schat gevonden en het spel gewonnen!";
+            tempDialogue.button = "Ga naar het hoofdmenu";
+            tempDialogue.image = "Treasure";
+            togglePopUp();
+            //Update database
+            SQL.Instance.getData("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
+        }
+    }
     public void questCheckMap(bool b)
     {
         MapMid.SetActive(true);
-        Image tempImage = GameObject.Find("Image" + tempQuest.startPosition).GetComponent<Image>();
+        /*int startPos = tempQuest.startPosition + 1;
+        int doPos = tempQuest.doPosition + 1;
+        int turnPos = tempQuest.turnInPosition + 1;
+        Image tempImage = GameObject.Find("Image" + startPos).GetComponent<Image>();
         if (tempQuest.progress == 1)
         {
-            tempImage = GameObject.Find("Image" + tempQuest.doPosition).GetComponent<Image>();
+            tempImage = GameObject.Find("Image" + doPos).GetComponent<Image>();
         }
         else if (tempQuest.progress == 2)
         {
-            tempImage = GameObject.Find("Image" + tempQuest.turnInPosition).GetComponent<Image>();
-        }
+            tempImage = GameObject.Find("Image" + turnPos).GetComponent<Image>();
+        }*/
+
         if (b)
         {
-            if(tempQuest.type == "red")
-            {
-                tempImage.color = new Color(255, 0, 0);
-            } else if(tempQuest.type == "green")
-            {
-                tempImage.color = new Color(0, 255, 0);
-            } else if(tempQuest.type == "blue")
-            {
-                tempImage.color = new Color(0, 0, 255);
-            }
+            //updateMiniMap();
             tempQuest = null;
         }
         else
         {
-            tempImage.color = new Color(0, 0, 0);
             MapMid.SetActive(false);
         }
+    }
+
+    public void updateMiniMap()
+    {
+        Image tempImage;
+        for (int i = 1; i < 31; i++)
+        {
+            tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
+            tempImage.color = new Color(200, 0, 0);
+        }
+
+        if (PlayerState.redQuest.progress == 1) setColor(PlayerState.redQuest.doPosition, new Color(255, 0, 0));
+        else if (PlayerState.redQuest.progress == 2) setColor(PlayerState.redQuest.turnInPosition, new Color(255, 0, 0));
+
+        if (PlayerState.blueQuest.progress == 1) setColor(PlayerState.blueQuest.doPosition, new Color(0, 255, 0));
+        else if (PlayerState.blueQuest.progress == 2) setColor(PlayerState.blueQuest.turnInPosition, new Color(0, 255, 0));
+
+        if (PlayerState.greenQuest.progress == 1) setColor(PlayerState.greenQuest.doPosition, new Color(0, 0, 255));
+        else if (PlayerState.greenQuest.progress == 2) setColor(PlayerState.greenQuest.turnInPosition, new Color(0, 0, 255));
+    }
+
+
+    public void setColor(int p, Color c)
+    {
+        p++;
+        Image i = GameObject.Find("Image" + p).GetComponent<Image>();
+        i.color = c;
+        debugtestText.text += "    " + p;
     }
 
     public void OnMove(string result)
@@ -440,7 +436,6 @@ public class GameController : MonoBehaviour
             int.TryParse(result, out scan);
             int scanPosition = local.layout.layout.IndexOf(scan.ToString());
             int currentPosition = local.players.list[currentTurn].currentPosition;
-
             // If you scan a different tile
 
             //Find tile position in layout
@@ -517,7 +512,7 @@ public class GameController : MonoBehaviour
                 PlayerState.validMove = false;
                 debugtestText.text = "correcte beweging, ga nog eens";
 
-                foreach (Incident i in local.incidents.list)
+               /* foreach (Incident i in local.incidents.list)
                 {
                     if (i.tile == local.players.list[currentTurn].currentPosition)
                     {
@@ -536,7 +531,7 @@ public class GameController : MonoBehaviour
                             incidentBtn.text = i.button;
                         }
                     }
-                }
+                }*/
             }
         }
     }
@@ -592,64 +587,10 @@ public class GameController : MonoBehaviour
             }
             else
             {
-                IncidentPopup.SetActive(false);
-                //switchPanel(GameMid);
+                endTurn();
             }
             encounteredIncident = null;
         }
-        /*else if(encounteredQuest != null)
-        {
-            title.text = encounteredQuest.title;
-            description.text = encounteredQuest.description;
-            incidentBtn.text = encounteredQuest.button;
-
-            int tempQuest;
-            if(int.TryParse(encounteredQuest.result, out tempQuest))
-            {
-                tempQuest--;
-                int randomTile = randomTileQuest();
-                if (encounteredQuest == PlayerState.blueQuest)
-                {
-                    PlayerState.blueQuest = local.quests[tempQuest];
-                    PlayerState.blueQuest.tile = randomTile;
-                }
-                else if (encounteredQuest == PlayerState.redQuest)
-                {
-                    PlayerState.redQuest = local.quests[tempQuest];
-                    PlayerState.redQuest.tile = randomTile;
-                }
-                else if (encounteredQuest == PlayerState.greenQuest)
-                {
-                    PlayerState.greenQuest = local.quests[tempQuest];
-                    PlayerState.greenQuest.tile = randomTile;
-                }
-                else if (encounteredQuest == PlayerState.energyQuest)
-                {
-                    PlayerState.energyQuest = local.quests[tempQuest];
-                }
-            }
-            else
-            {
-                if(encounteredQuest.type == "blue")
-                {
-                    PlayerState.blueQuest = null;
-                }
-                else if(encounteredQuest.type == "red")
-                {
-                    PlayerState.redQuest = null;
-                }
-                else if(encounteredQuest.type == "green")
-                {
-                    PlayerState.greenQuest = null;
-                }
-                else if(encounteredQuest.type == "energy")
-                {
-                    //TODO add energy reward
-                    PlayerState.energyQuest = null;
-                }
-            }
-            encounteredQuest = null;
-        }*/
     }
 
     public void AnimalDance()
@@ -690,9 +631,13 @@ public class GameController : MonoBehaviour
 
     public void setMap()
     {
-        for (int i = 1; i < 31; i++)
+        /*local.layout.layout.RemoveAt(0);
+        local.layout.layout[0] = "11";
+        local.layout.layout.Add("8");*/
+        for (int i = 0; i < 30; i++)
         {
-            Image tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
+            int j = i + 1;
+            Image tempImage = GameObject.Find("Image" + j).GetComponent<Image>();
             int current;
             /*if (int.TryParse(local.layout.layout[i - 1], out current))
             {
@@ -700,9 +645,8 @@ public class GameController : MonoBehaviour
             }
             else
             {
-                local.layout.layout.Add("8");
             }*/
-            current = int.Parse(local.layout.layout[i - 1]);
+            current = int.Parse(local.layout.layout[i]);
             Debug.Log("i = " + i + " current = " + current);
             if (current == 1)
             {
@@ -848,51 +792,5 @@ public class GameController : MonoBehaviour
         {
             local.quests[i].turnInPosition = positionVillageGreen;
         }
-    }
-
-    public int randomTileQuest()
-    {
-        int returnValue = 0;
-        string questName = encounteredQuest.name;
-        if (questName == "Airplane")
-        {
-            returnValue = positionAirplane;
-        }
-        else if (questName == "Cave")
-        {
-            returnValue = positionCave;
-        }
-        else if (questName == "Village")
-        {
-            if (encounteredQuest.type == "blue")
-            {
-                returnValue = positionVillageBlue;
-            }
-            else if (encounteredQuest.type == "red")
-            {
-                returnValue = positionVillageRed;
-            }
-            else
-            {
-                returnValue = positionVillageGreen;
-            }
-        }
-        else if (questName == "Water")
-        {
-            returnValue = positionLake[(int)Random.Range(1f, 2f)];
-        }
-        else if (questName == "Open")
-        {
-            returnValue = positionOpen[(int)Random.Range(1f, 6f)];
-        }
-        else if (questName == "Flowers")
-        {
-            returnValue = positionFlowers[(int)Random.Range(1f, 3f)];
-        }
-        else if (questName == "Forest")
-        {
-            returnValue = positionForest[(int)Random.Range(1f, 14f)];
-        }
-        return returnValue;
     }
 }

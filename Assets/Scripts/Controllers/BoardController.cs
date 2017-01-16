@@ -247,7 +247,7 @@ public class BoardController : MonoBehaviour
 
             #region decideTreasure
             Treasure treasure = new Treasure();
-            int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out treasure.tile);
+            treasure.tile = (int)UnityEngine.Random.Range(0f, 29f);
             #endregion
 
             #region crappyLayoutDefault

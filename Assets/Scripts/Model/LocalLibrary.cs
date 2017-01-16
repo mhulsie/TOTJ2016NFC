@@ -55,7 +55,7 @@ public class LocalLibrary
             }
         }
         board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID =" + RoomState.id));
-
+        board.treasureT = JsonUtility.FromJson<Treasure>(board.treasure);
         players = JsonUtility.FromJson<playerWrapper>(board.players);
         
         Debug.Log("insert qwuery " + "INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
