@@ -9,19 +9,20 @@ public class ButtonController : MonoBehaviour {
     public GameObject host;
     public GameObject join;
     public GameObject rules;
-    public GameObject settings;
     public GameObject credits;
     public GameObject player;
     public GameObject lobby;
     public GameObject board;
+    public GameObject error;
+    public Text errorText;
 
     private GameObject currentMid;
     public Button backBtn;
-
+    
     //Main
     public void switchPanel(GameObject panel)
     {
-        if(currentMid == null)
+        if (currentMid == null)
         {
             currentMid = main;
         }
@@ -39,7 +40,7 @@ public class ButtonController : MonoBehaviour {
     //Main
     public void backButton()
     {
-        if(currentMid == host || currentMid == join || currentMid == lobby || currentMid == settings || currentMid == rules || currentMid == settings)
+        if (currentMid == host || currentMid == join || currentMid == lobby  || currentMid == rules || currentMid == credits)
         {
             switchPanel(main);
         }
@@ -49,7 +50,6 @@ public class ButtonController : MonoBehaviour {
     public Text roomName;
     private int players;
     public Room room;
-    public Text error;
 
     //Host
     public void setPlayers(int i)
@@ -65,7 +65,7 @@ public class ButtonController : MonoBehaviour {
             string roomID = SQL.Instance.getData("select roomID as result from room where name = '" + roomName.text + "' and active = 'true'");
             if (roomID != "TRUE")
             {
-                error.text = "Deze kamernaam is al in gebruik";
+                toggleError("Deze kamernaam is al in gebruik");
             }
             else
             {
@@ -87,60 +87,30 @@ public class ButtonController : MonoBehaviour {
                 switchPanel(lobby);
             }
         }
+        else
+        {
+            toggleError("Vul een kamernaam in.");
+        }
     }
     #endregion
 
     #region PlayerLogic
     //player
-    public int playerHat;
-    public int playerVehicle;
     public Text playerName;
-    //player
-    public void toggleVehicleSelection(int i)
-    {
-        switch (i)
-        {
-            case 1:
-                playerVehicle = 1;
-                break;
-            case 2:
-                playerVehicle = 2;
-                break;
-            case 3:
-                playerVehicle = 3;
-                break;
-        }
-    }
-    //player
-    public void togglehatSelection(int i)
-    {
-        switch (i)
-        {
-            case 1:
-                playerHat = 1;
-                break;
-            case 2:
-                playerHat = 2;
-                break;
-            case 3:
-                playerHat = 3;
-                break;
-        }
-    }
     //player
     public void createPlayer()
     {
         if (playerName.text != "")
         {
-            playerHat = 1;
-            playerVehicle = 1;
             PlayerState.name = playerName.text;
-            PlayerState.hat = playerHat;
-            PlayerState.vehicle = playerVehicle;
 
-            SQL.Instance.getData("INSERT INTO account (`nickName`, `vehicle`, `hat`) VALUES ('" + PlayerState.name + "'," + PlayerState.vehicle + "," + PlayerState.hat + ")");
+            SQL.Instance.getData("INSERT INTO account (`nickName`) VALUES ('" + PlayerState.name + "')");
             int.TryParse(SQL.Instance.getData("select max(accountID) as result from account"), out PlayerState.id);
             switchPanel(main);
+        }
+        else
+        {
+            toggleError("Vul een spelernaam in.");
         }
     }
     #endregion
@@ -152,6 +122,7 @@ public class ButtonController : MonoBehaviour {
 
     public void JoinLobby()
     {
+        lobbyStartBtn.gameObject.SetActive(false);
         if (joinRoom.text.Length > 0)
         {
             string resultRoom = SQL.Instance.getData("SELECT * FROM `room` WHERE name = '" + joinRoom.text + "'and active = 'true'");
@@ -197,18 +168,18 @@ public class ButtonController : MonoBehaviour {
                     }
                     else
                     {
-                        error.text = "Deze kamer is vol.";
+                        toggleError("Deze kamer is vol");
                     }
                 }
             }
             else
             {
-                error.text = "Deze kamer bestaat niet.";
+                toggleError("Deze kamer bestaat niet.");
             }
         }
         else
         {
-            error.text = "Vul een kamernaam in!";
+            toggleError("Vul een kamernaam in.");
         }
     }
     #endregion
@@ -225,6 +196,7 @@ public class ButtonController : MonoBehaviour {
     //lobby
     public void ExitGame()
     {
+        lobbyStartBtn.gameObject.SetActive(true);
         if (RoomState.p1 != new Player())
         {
             SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p1.accountID);
@@ -263,11 +235,6 @@ public class ButtonController : MonoBehaviour {
 
     public void Update()
     {
-        if (RoomState.host != PlayerState.id)
-        {
-            //lobbyStartBtn.gameObject.SetActive(false);
-           // lobbyExitBtn.gameObject.SetActive(false);
-        }
         if (currentMid == lobby)
         {
             if (lobbyPullTimer > 120 || lobbyPullTimer == -1)
@@ -320,5 +287,38 @@ public class ButtonController : MonoBehaviour {
             }
         }
         lobbyPullTimer++;
+    }
+
+    public void goHome()
+    {
+        if (currentMid != null)
+        {
+            switchPanel(main);
+        }
+    }
+
+    public void toggleSound()
+    {
+        if (PlayerState.sound)
+        {
+            PlayerState.sound = false;
+        }
+        else
+        {
+            PlayerState.sound = true;
+        }
+    }
+
+    public void toggleError(string description)
+    {
+        if (error.activeSelf)
+        {
+            error.SetActive(false);
+        }
+        else
+        {
+            error.SetActive(true);
+            errorText.text = description;
+        }
     }
 }
