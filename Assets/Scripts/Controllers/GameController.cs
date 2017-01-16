@@ -32,6 +32,7 @@ public class GameController : MonoBehaviour
     public int pullTimer = -1;
     public LocalLibrary local;
     public bool myTurn = false;
+    public bool hasMoved = false;
 
     public Text debugtestText;
     public Text currentTurnTExt;
@@ -189,6 +190,13 @@ public class GameController : MonoBehaviour
 
     public void endTurn()
     {
+        if (!hasMoved)
+        {
+            changeEnergy(1);
+        }
+
+        hasMoved = false;
+
         currentTurn++;
         if (currentTurn == local.players.list.Count)
         {
@@ -426,7 +434,7 @@ public class GameController : MonoBehaviour
 
     public void OnMove(string result)
     {
-        if (myTurn)
+        if (myTurn && PlayerState.energy != 0)
         {
             // Set Values
             int scan;
@@ -507,29 +515,40 @@ public class GameController : MonoBehaviour
                 local.players.list[currentTurn].currentPosition = scanPosition;
                 changeEnergy(-1);
                 PlayerState.validMove = false;
-                debugtestText.text = "correcte beweging, ga nog eens";
+                hasMoved = true;
 
-               /* foreach (Incident i in local.incidents.list)
+                if(PlayerState.energy == 0)
                 {
-                    if (i.tile == local.players.list[currentTurn].currentPosition)
-                    {
-                        debugtestText.text = "ROAR het is gelijk aan " + i.name;
-                        if(encounteredIncident == null)
-                        {
-                            encounteredIncident = i;
+                    debugtestText.text = "correcte beweging, je energie is nu op";
+                }else
+                {
+                    debugtestText.text = "correcte beweging, ga nog eens";
+                }
 
-                            IncidentPopup.SetActive(true);
-                            if (i.name == "Elephant")
-                            {
-                                incidentImage.sprite = ElephantPlaceHolder.sprite;
-                            }
-                            title.text = i.title;
-                            description.text = i.description;
-                            incidentBtn.text = i.button;
-                        }
-                    }
-                }*/
+                /* foreach (Incident i in local.incidents.list)
+                 {
+                     if (i.tile == local.players.list[currentTurn].currentPosition)
+                     {
+                         debugtestText.text = "ROAR het is gelijk aan " + i.name;
+                         if(encounteredIncident == null)
+                         {
+                             encounteredIncident = i;
+
+                             IncidentPopup.SetActive(true);
+                             if (i.name == "Elephant")
+                             {
+                                 incidentImage.sprite = ElephantPlaceHolder.sprite;
+                             }
+                             title.text = i.title;
+                             description.text = i.description;
+                             incidentBtn.text = i.button;
+                         }
+                     }
+                 }*/
             }
+        }else
+        {
+            debugtestText.text = "Je kunt niet bewegen, je hebt geen energie meer";
         }
     }
 
