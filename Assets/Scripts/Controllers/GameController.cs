@@ -128,9 +128,6 @@ public class GameController : MonoBehaviour
         placeholderImage.sprite = newImage.sprite;
         
         defineCodeQuests();
-        PlayerState.blueQuest.progress = 3;
-        PlayerState.redQuest.progress = 3;
-        PlayerState.greenQuest.progress = 3;
     }
 
     // Update is called once per frame
@@ -140,7 +137,7 @@ public class GameController : MonoBehaviour
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
 
-        //DisplayEnergy();
+        DisplayEnergy();
         pullTimer++;
         currentTurnTExt.text = pullTimer.ToString();
         if ((pullTimer > 120 || pullTimer == -1) && !myTurn)
