@@ -32,6 +32,7 @@ public class GameController : MonoBehaviour
     public int pullTimer = -1;
     public LocalLibrary local;
     public bool myTurn = false;
+    public bool hasMoved = false;
 
     public Text debugtestText;
     public Text currentTurnTExt;
@@ -189,6 +190,13 @@ public class GameController : MonoBehaviour
 
     public void endTurn()
     {
+        if (!hasMoved)
+        {
+            changeEnergy(1);
+        }
+
+        hasMoved = false;
+
         currentTurn++;
         if (currentTurn == local.players.list.Count)
         {
@@ -479,7 +487,7 @@ public class GameController : MonoBehaviour
 
     public void OnMove(string result)
     {
-        if (myTurn)
+        if (myTurn && PlayerState.energy != 0)
         {
             // Set Values
             int scan;
@@ -543,7 +551,7 @@ public class GameController : MonoBehaviour
                     }
                 }
             }
-            else if(currentPosition == scanPosition)
+            else if (currentPosition == scanPosition)
             {
                 PlayerState.validMove = true;
             }
@@ -560,8 +568,7 @@ public class GameController : MonoBehaviour
                 local.players.list[currentTurn].currentPosition = scanPosition;
                 changeEnergy(-1);
                 PlayerState.validMove = false;
-                debugtestText.text = "correcte beweging, ga nog eens";
-
+                hasMoved = true;
                 foreach (Incident i in local.incidents.list)
                 {
                     if (i.tile == local.players.list[currentTurn].currentPosition)
@@ -575,6 +582,14 @@ public class GameController : MonoBehaviour
                         tempDialogue.image = "Elephant";
                         togglePopUp();
                     }
+                }
+                if (PlayerState.energy == 0)
+                {
+                    debugtestText.text = "correcte beweging, je energie is nu op";
+                }
+                else
+                {
+                    debugtestText.text = "correcte beweging, ga nog eens";
                 }
             }
         }
