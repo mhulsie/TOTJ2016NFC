@@ -489,7 +489,7 @@ public class GameController : MonoBehaviour
 
     public void OnMove(string result)
     {
-        if (myTurn)
+        if (myTurn && IncidentPopup.activeSelf == false)
         {
             // Set Values
             int scan;

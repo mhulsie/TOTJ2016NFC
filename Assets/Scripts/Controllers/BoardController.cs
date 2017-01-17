@@ -122,7 +122,13 @@ public class BoardController : MonoBehaviour
 
     public void OnScan(string result)
     {
-        if (board.wrapper.layout.Count < 30)
+        bool sameTile = false;
+        if(board.wrapper.layout.Count != 0)
+        {
+            sameTile = board.wrapper.layout[board.wrapper.layout.Count - 1] == result;
+        }
+
+        if (board.wrapper.layout.Count < 30 && (!sameTile || board.wrapper.layout.Count == 0))
         {
             text.text = result;
             int scan;
