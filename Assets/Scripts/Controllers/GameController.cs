@@ -115,8 +115,8 @@ public class GameController : MonoBehaviour
             {
                 item.tile = (int)Random.Range(1f, 30f);
             }
-            SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
             SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
+            SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
         }
         
         setMap();
