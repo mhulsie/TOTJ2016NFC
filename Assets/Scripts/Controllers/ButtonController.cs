@@ -17,24 +17,35 @@ public class ButtonController : MonoBehaviour {
     public Text errorText;
 
     private GameObject currentMid;
+    private GameObject target;
+
     public Button backBtn;
-    
+    public Button homeBtn;
+
     //Main
     public void switchPanel(GameObject panel)
     {
+        if (PlayerState.name == null || PlayerState.name == "")
+        {
+            target = panel;
+            player.gameObject.SetActive(true);
+            return;
+        }
+
         if (currentMid == null)
         {
             currentMid = main;
         }
-        if(PlayerState.name == null)
-        {
-            PlayerState.name = "1";
-            switchPanel(player);
-            return;
-        }
+        backBtn.gameObject.SetActive(true);
+        homeBtn.gameObject.SetActive(true);
         currentMid.gameObject.SetActive(false);
         currentMid = panel;
         panel.gameObject.SetActive(true);
+        if (panel == main || panel == player)
+        {
+            backBtn.gameObject.SetActive(false);
+            homeBtn.gameObject.SetActive(false);
+        }
     }
 
     //Main
@@ -100,17 +111,17 @@ public class ButtonController : MonoBehaviour {
     //player
     public void createPlayer()
     {
-        if (playerName.text != "")
+        PlayerState.name = playerName.text;
+        if (playerName.text == "")
         {
-            PlayerState.name = playerName.text;
+            toggleError("Vul een spelernaam in.");
+        } else
+        {
 
             SQL.Instance.getData("INSERT INTO account (`nickName`) VALUES ('" + PlayerState.name + "')");
             int.TryParse(SQL.Instance.getData("select max(accountID) as result from account"), out PlayerState.id);
-            switchPanel(main);
-        }
-        else
-        {
-            toggleError("Vul een spelernaam in.");
+            switchPanel(target);
+            player.gameObject.SetActive(false);
         }
     }
     #endregion
@@ -250,7 +261,6 @@ public class ButtonController : MonoBehaviour {
                 lobbyPullTimer = 0;
 
                 string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
-                Debug.Log(currentPlayers);
                 string[] current = currentPlayers.Split('*');
                 RoomState.currentPlayers = current.Length;
                 RoomState.p1 = new Player();
@@ -261,22 +271,18 @@ public class ButtonController : MonoBehaviour {
                 if (current.Length > 0)
                 {
                     RoomState.p1 = JsonUtility.FromJson<Player>(current[0]);
-                    Debug.Log("p1 = " + RoomState.p1.nickName);
                 }
                 if (current.Length > 1)
                 {
                     RoomState.p2 = JsonUtility.FromJson<Player>(current[1]);
-                    Debug.Log("p1 = " + RoomState.p2.nickName);
                 }
                 if (current.Length > 2)
                 {
                     RoomState.p3 = JsonUtility.FromJson<Player>(current[2]);
-                    Debug.Log("p1 = " + RoomState.p3.nickName);
                 }
                 if (current.Length > 3)
                 {
                     RoomState.p4 = JsonUtility.FromJson<Player>(current[3]);
-                    Debug.Log("p1 = " + RoomState.p4.nickName);
                 }
 
                 lobbyRoomName.text = RoomState.name + " (" + RoomState.currentPlayers + " / " + RoomState.players + ")";

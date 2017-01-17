@@ -7,6 +7,16 @@ public class profileController : MonoBehaviour {
     public Image jeep;
     public Image hat;
 
+    public Image hatGray;
+    public Image hatPink;
+    public Image hatYellow;
+    public Image hatGreen;
+
+    public Image jeepRed;
+    public Image jeepBlue;
+    public Image jeepPurple;
+    public Image jeepGreen;
+
     public void jeepSelectColor(string c)
     {
         string i = "Jeep";
@@ -23,22 +33,53 @@ public class profileController : MonoBehaviour {
     {
         if(i == "Jeep")
         {
-            GameObject.Find(i + "BtnRed").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnBlue").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnPurple").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnGreen").GetComponent<Button>().interactable = true;
+            jeepRed.gameObject.SetActive(false);
+            jeepBlue.gameObject.SetActive(false);
+            jeepPurple.gameObject.SetActive(false);
+            jeepGreen.gameObject.SetActive(false);
+            if(c == "Red")
+            {
+                jeepRed.gameObject.SetActive(true);
+            }
+            if (c == "Blue")
+            {
+                jeepBlue.gameObject.SetActive(true);
+            }
+            if (c == "Purple")
+            {
+                jeepPurple.gameObject.SetActive(true);
+            }
+            if (c == "Green")
+            {
+                jeepGreen.gameObject.SetActive(true);
+            }
             jeep.sprite = GameObject.Find(i + c).GetComponent<Image>().sprite;
             PlayerState.vehicle = c;
         }
         else
         {
-            GameObject.Find(i + "BtnGray").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnPink").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnYellow").GetComponent<Button>().interactable = true;
-            GameObject.Find(i + "BtnGreen").GetComponent<Button>().interactable = true;
+            hatGray.gameObject.SetActive(false);
+            hatPink.gameObject.SetActive(false);
+            hatYellow.gameObject.SetActive(false);
+            hatGreen.gameObject.SetActive(false);
+            if (c == "Gray")
+            {
+                hatGray.gameObject.SetActive(true);
+            }
+            if (c == "Pink")
+            {
+                hatPink.gameObject.SetActive(true);
+            }
+            if (c == "Yellow")
+            {
+                hatYellow.gameObject.SetActive(true);
+            }
+            if (c == "Green")
+            {
+                hatGreen.gameObject.SetActive(true);
+            }
             hat.sprite = GameObject.Find(i + c).GetComponent<Image>().sprite;
             PlayerState.hat = c;
         }
-        GameObject.Find(i + "Btn" + c).GetComponent<Button>().interactable = false;
     }
 }
