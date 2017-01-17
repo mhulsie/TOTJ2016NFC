@@ -35,7 +35,6 @@ public class GameController : MonoBehaviour
     public bool hasMoved = false;
 
     public Text debugtestText;
-    public Text currentTurnTExt;
 
     //Incidnets
     public Text title;
@@ -74,9 +73,9 @@ public class GameController : MonoBehaviour
     public Image forest;
 
     //Quests
-    public int positionVillageRed;
-    public int positionVillageBlue;
-    public int positionVillageGreen;
+    public int positionVillageC;
+    public int positionVillageB;
+    public int positionVillageA;
     public int positionAirplane;
     public int positionCave;
     public List<int> positionLake;
@@ -85,7 +84,6 @@ public class GameController : MonoBehaviour
     public List<int> positionForest;
     public List<int> positionBirds;
     public List<int> positionPlants;
-    public Quest encounteredQuest;
     public Quest tempQuest;
     public Dialogue tempDialogue = new Dialogue();
 
@@ -101,7 +99,6 @@ public class GameController : MonoBehaviour
         positionPlants = new List<int>();
         PlayerState.energy = 15;
         encounteredIncident = null;
-        encounteredQuest = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
 
@@ -134,17 +131,13 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        currentTurnTExt.text = "test1234";
         // Keep pulling to see if its my turn
         // Dont pull if its my turn
 
         DisplayEnergy();
         pullTimer++;
-        currentTurnTExt.text = pullTimer.ToString();
         if ((pullTimer > 120 || pullTimer == -1) && !myTurn)
         {
-            currentTurnTExt.text = "test5678";
-
             pullTimer = 0;
             int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
             if(currentTurn == 100)
@@ -155,10 +148,8 @@ public class GameController : MonoBehaviour
                 tempDialogue.image = "TreasureL";
 
             }
-            currentTurnTExt.text = "ik heb het board";
             if (PlayerState.id == local.players.list[currentTurn].accountID)
             {
-                currentTurnTExt.text = "hier ook";
                 if (PlayerState.energy == 0)
                 {
                     tempDialogue.title = "Benzine op";
@@ -199,7 +190,7 @@ public class GameController : MonoBehaviour
     {
         if (!hasMoved)
         {
-            changeEnergy(1);
+            changeEnergy(3);
         }
 
         hasMoved = false;
@@ -215,16 +206,10 @@ public class GameController : MonoBehaviour
         ChooseAction.SetActive(false);
         MapMid.SetActive(false);
         GameMid.SetActive(true);
-
-        currentTurnTExt.text += "   myturn in end " + myTurn.ToString();
+        
         myTurn = false;
-        currentTurnTExt.text += "   myturn after end " + myTurn.ToString();
         string incidentsJson = JsonUtility.ToJson(local.incidents);
-        currentTurnTExt.text = "1";
-        debugtestText.text = local.quests[0].name;
-        currentTurnTExt.text = "2";
         SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
-        currentTurnTExt.text = "3";
     }
     #endregion
 
@@ -243,11 +228,10 @@ public class GameController : MonoBehaviour
         checkQuest(rq, currentPosition);
         checkQuest(gq, currentPosition);
         //checkQuest(eq, currentPosition);
-
-        currentTurnTExt.text += "      tempquest " + tempQuest.type + "   progress   " + tempQuest.progress;
-        debugtestText.text = " IK DOE HET NIET";
+        
         if(tempQuest != null)
         {
+            debugtestText.text += "  " + tempQuest.type;
             if(tempQuest.progress == 0)
             {
                 tempDialogue = tempQuest.startDialogueD;
@@ -294,7 +278,7 @@ public class GameController : MonoBehaviour
         {
             switch (encounteredIncident.action)
             {
-                case "CornerNE":
+               /* case "CornerNE":
                     local.players.list[currentTurn].currentPosition = 5;
                     PlayerState.movedIncorrect = true;
                     break;
@@ -309,7 +293,7 @@ public class GameController : MonoBehaviour
                 case "CornerSW":
                     local.players.list[currentTurn].currentPosition = 24;
                     PlayerState.movedIncorrect = true;
-                    break;
+                    break;*/
                 case "Energy-1":
                     changeEnergy(-1);
                     break;
@@ -350,40 +334,40 @@ public class GameController : MonoBehaviour
 
     public void advanceProgress()
     {
-        if(tempQuest == PlayerState.blueQuest)
+        if(tempQuest.type == PlayerState.blueQuest.type)
         {
             PlayerState.blueQuest.progress++;
-            currentTurnTExt.text += "    progress after   " + PlayerState.blueQuest.progress;
             if(PlayerState.blueQuest.progress == 2)
             {
-                if (PlayerState.blueQuest.turnInPoint == null)
+                if (PlayerState.blueQuest.turnInPoint == "")
                 {
                     PlayerState.blueQuest.progress = 3;
                 }
             }
         }
-        if (tempQuest == PlayerState.redQuest)
+        if (tempQuest.type == PlayerState.redQuest.type)
         {
             PlayerState.redQuest.progress++;
             if (PlayerState.redQuest.progress == 2)
             {
-                if (PlayerState.redQuest.turnInPoint == null)
+                if (PlayerState.redQuest.turnInPoint == "")
                 {
                     PlayerState.redQuest.progress = 3;
                 }
             }
         }
-        if (tempQuest == PlayerState.greenQuest)
+        if (tempQuest.type == PlayerState.greenQuest.type)
         {
             PlayerState.greenQuest.progress++;
             if (PlayerState.greenQuest.progress == 2)
             {
-                if (PlayerState.greenQuest.turnInPoint == null)
+                if (PlayerState.greenQuest.turnInPoint == "")
                 {
                     PlayerState.greenQuest.progress = 3;
                 }
             }
         }
+        tempQuest = null;
     }
 
     public void openMap()
@@ -416,7 +400,6 @@ public class GameController : MonoBehaviour
 
     public void digTreasure()
     {
-        debugtestText.text = "I pressed treasure totale progress " + (PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) + "huidige pos = " + local.players.list[currentTurn].currentPosition + " treasrepos " + local.board.treasureT.tile; 
         if((PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) == 9 && local.players.list[currentTurn].currentPosition == local.board.treasureT.tile)
         {
             MoveAction.SetActive(false);
@@ -484,7 +467,6 @@ public class GameController : MonoBehaviour
         p++;
         Image i = GameObject.Find("Image" + p).GetComponent<Image>();
         i.color = c;
-        debugtestText.text += "    " + p;
     }
 
     public void OnMove(string result)
@@ -514,7 +496,7 @@ public class GameController : MonoBehaviour
                 }
                 else
                 {
-                    debugtestText.text = " nog steeds foute tegel";
+                    //debugtestText.text = " nog steeds foute tegel";
                 }
             }
             else if (currentPosition != scanPosition && PlayerState.energy > 0)
@@ -524,7 +506,6 @@ public class GameController : MonoBehaviour
                 {
                     if (currentPosition + 1 == scanPosition)
                     {
-                        debugtestText.text = "goed +1";
                         PlayerState.validMove = true;
                     }
                 }
@@ -532,7 +513,6 @@ public class GameController : MonoBehaviour
                 {
                     if (currentPosition + 6 == scanPosition)
                     {
-                        debugtestText.text = "goed +6";
                         PlayerState.validMove = true;
                     }
                 }
@@ -540,7 +520,6 @@ public class GameController : MonoBehaviour
                 {
                     if (currentPosition - 1 == scanPosition)
                     {
-                        debugtestText.text = "goed -1";
                         PlayerState.validMove = true;
                     }
                 }
@@ -548,7 +527,6 @@ public class GameController : MonoBehaviour
                 {
                     if (currentPosition - 6 == scanPosition)
                     {
-                        debugtestText.text = "goed -6";
                         PlayerState.validMove = true;
                     }
                 }
@@ -565,7 +543,6 @@ public class GameController : MonoBehaviour
             }
             else if (PlayerState.validMove && PlayerState.energy > 0)
             {
-                debugtestText.text = "goede 1";
                 // alter currenTile and energy
                 local.players.list[currentTurn].currentPosition = scanPosition;
                 changeEnergy(-1);
@@ -575,7 +552,6 @@ public class GameController : MonoBehaviour
                 {
                     if (i.tile == local.players.list[currentTurn].currentPosition)
                     {
-                        debugtestText.text = "ROAR het is gelijk aan " + i.name;
                         encounteredIncident = i;
 
                         tempDialogue.title = encounteredIncident.title;
@@ -595,69 +571,12 @@ public class GameController : MonoBehaviour
                 }
                 else
                 {
-                    debugtestText.text = "correcte beweging, ga nog eens";
+                    debugtestText.text = "correcte beweging, ga nog eens" + PlayerState.blueQuest.progress + " " + PlayerState.redQuest.progress + " " + PlayerState.greenQuest.progress + "          " + PlayerState.energy;
                 }
             }
         }
     }
-    /*
-    public void IncidentOke()
-    {
-        if(encounteredIncident != null)
-        {
-            switch (encounteredIncident.action)
-            {
-                case "CornerNE":
-                    local.players.list[currentTurn].currentPosition = 5;
-                    PlayerState.movedIncorrect = true;
-                    endTurn();
-                    break;
-                case "CornerNW":
-                    local.players.list[currentTurn].currentPosition = 0;
-                    PlayerState.movedIncorrect = true;
-                    endTurn();
-                    break;
-                case "CornerSE":
-                    local.players.list[currentTurn].currentPosition = 29;
-                    PlayerState.movedIncorrect = true;
-                    endTurn();
-                    break;
-                case "CornerSW":
-                    local.players.list[currentTurn].currentPosition = 24;
-                    PlayerState.movedIncorrect = true;
-                    endTurn();
-                    break;
-                case "End":
-                    endTurn();
-                    break;
-                case "Energy-1":
-                    changeEnergy(-1);
-                    endTurn();
-                    break;
-                case "Energy-2":
-                    changeEnergy(-2);
-                    endTurn();
-                    break;
-                case "Energy-3":
-                    changeEnergy(-3);
-                    endTurn();
-                    break;
-                case "Energy+3":
-                    changeEnergy(3);
-                    break;
-            }
-            if (encounteredIncident.action == "Energy+3" || encounteredIncident.action.Contains("Corner"))
-            {
-                IncidentPopup.SetActive(false);
-            }
-            else
-            {
-                endTurn();
-            }
-            encounteredIncident = null;
-        }
-    }
-    */
+
     public void AnimalDance()
     {
         foreach (Incident i in local.incidents.list)
@@ -666,8 +585,6 @@ public class GameController : MonoBehaviour
             {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
-
-                debugtestText.text = i.name;
                 i.tile = randomTile;
             }
         }
@@ -696,6 +613,7 @@ public class GameController : MonoBehaviour
 
     public void setMap()
     {
+        MapMid.SetActive(true);
         /*local.layout.layout.RemoveAt(0);
         local.layout.layout[0] = "11";
         local.layout.layout.Add("8");*/
@@ -712,11 +630,9 @@ public class GameController : MonoBehaviour
             {
             }*/
             current = int.Parse(local.layout.layout[i]);
-            Debug.Log("i = " + i + " current = " + current);
             if (current == 1)
             {
                 tempImage.sprite = city.sprite;
-                debugtestText.text += i;
                 positionAirplane = i;
             }
             else if (current == 2)
@@ -729,13 +645,15 @@ public class GameController : MonoBehaviour
                 tempImage.sprite = village.sprite;
                 if(current == 3)
                 {
-                    positionVillageRed = i;
-                } else if(current == 4)
+                    positionVillageA = i;
+                }
+                else if(current == 4)
                 {
-                    positionVillageBlue = i;
-                } else if(current == 5)
+                    positionVillageB = i;
+                }
+                else if(current == 5)
                 {
-                    positionVillageGreen = i;
+                    positionVillageC = i;
                 }
             }
             else if (current == 6 || current == 7)
@@ -758,7 +676,8 @@ public class GameController : MonoBehaviour
                 tempImage.sprite = forest.sprite;
                 positionForest.Add(i);
             }
-            if(current == 23 || current == 8 || current == 9 || current == 12 || current == 20 || current == 29 || current == 15)
+
+            if(current == 8 || current == 9 || current == 10 || current == 14 || current == 20|| current == 22 || current == 30)
             {
                 positionBirds.Add(i);
             }
@@ -767,6 +686,7 @@ public class GameController : MonoBehaviour
                 positionFlowers.Add(i);
             }
         }
+        MapMid.SetActive(false);
     }
 
     public void defineCodeQuests()
@@ -778,15 +698,16 @@ public class GameController : MonoBehaviour
             {
                 turn++;
             }
-            Debug.Log(turn);
         }
-        Debug.Log("TURN " + turn);
+
         setRandomTile(turn);
         setRandomTile(turn + 4);
         setRandomTile(turn + 8);
+
         PlayerState.redQuest = local.quests[turn];
         PlayerState.greenQuest = local.quests[turn + 4];
         PlayerState.blueQuest = local.quests[turn + 8];
+
         PlayerState.redQuest.progress = 0;
         PlayerState.greenQuest.progress = 0;
         PlayerState.blueQuest.progress = 0;
@@ -808,54 +729,56 @@ public class GameController : MonoBehaviour
     {
         if(local.quests[i].startPoint == "3")
         {
-            local.quests[i].startPosition = positionVillageRed;
+            local.quests[i].startPosition = positionVillageA;
         }
         else if (local.quests[i].startPoint == "4")
         {
-            local.quests[i].startPosition = positionVillageBlue;
+            local.quests[i].startPosition = positionVillageB;
         }
         else if (local.quests[i].startPoint == "5")
         {
-            local.quests[i].startPosition = positionVillageGreen;
+            local.quests[i].startPosition = positionVillageC;
         }
+
         switch (local.quests[i].doPoint)
         {
             case "cave":
                 local.quests[i].doPosition = positionCave;
                 break;
             case "villageBlue":
-                local.quests[i].doPosition = positionVillageBlue;
+                local.quests[i].doPosition = positionVillageB;
                 break;
             case "villageGreen":
-                local.quests[i].doPosition = positionVillageGreen;
+                local.quests[i].doPosition = positionVillageA;
                 break;
             case "airplane":
                 local.quests[i].doPosition = positionAirplane;
                 break;
             case "birds":
-                local.quests[i].doPosition = positionBirds[(int)Random.Range(1f, positionBirds.Count) - 1];
+                local.quests[i].doPosition = positionBirds[(int)Random.Range(0f, positionBirds.Count -1)];
                 break;
             case "plants":
-                local.quests[i].doPosition = positionPlants[(int)Random.Range(1f, positionPlants.Count) - 1];
+                local.quests[i].doPosition = positionPlants[(int)Random.Range(0f, positionPlants.Count - 1)];
                 break;
             case "flowers":
-                local.quests[i].doPosition = positionFlowers[(int)Random.Range(1f, positionFlowers.Count) - 1];
+                local.quests[i].doPosition = positionFlowers[(int)Random.Range(0f, positionFlowers.Count - 1)];
                 break;
             case "water":
-                local.quests[i].doPosition = positionLake[(int)Random.Range(1f, positionLake.Count) - 1];
+                local.quests[i].doPosition = positionLake[(int)Random.Range(0f, positionLake.Count - 1)];
                 break;
         }
         if (local.quests[i].turnInPoint == "3")
         {
-            local.quests[i].turnInPosition = positionVillageRed;
+            local.quests[i].turnInPosition = positionVillageA;
         }
         else if (local.quests[i].turnInPoint == "4")
         {
-            local.quests[i].turnInPosition = positionVillageBlue;
+            local.quests[i].turnInPosition = positionVillageB;
         }
         else if (local.quests[i].turnInPoint == "5")
         {
-            local.quests[i].turnInPosition = positionVillageGreen;
+            local.quests[i].turnInPosition = positionVillageC;
         }
+        Debug.Log(JsonUtility.ToJson(local.quests[i]));
     }
 }
