@@ -373,6 +373,7 @@ public class GameController : MonoBehaviour
     public void openMap()
     {
         MapMid.SetActive(true);
+        updateMiniMap();
     }
 
     public void closeMap()
@@ -434,7 +435,7 @@ public class GameController : MonoBehaviour
         if (b)
         {
             //updateMiniMap();
-            tempQuest = null;
+            
         }
         else
         {
@@ -442,11 +443,15 @@ public class GameController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// This function updates the hints on the minimap.
+    /// </summary>
     public void updateMiniMap()
     {
         Image tempImage;
         for (int i = 1; i < 31; i++)
         {
+            Debug.Log(i);
             tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
             tempImage.color = new Color(200, 0, 0);
         }
@@ -613,36 +618,28 @@ public class GameController : MonoBehaviour
 
     public void setMap()
     {
-        MapMid.SetActive(true);
-        /*local.layout.layout.RemoveAt(0);
+        local.layout.layout.RemoveAt(0);
         local.layout.layout[0] = "11";
-        local.layout.layout.Add("8");*/
+        local.layout.layout.Add("8");
+
+        MapMid.SetActive(true);
         for (int i = 0; i < 30; i++)
         {
             int j = i + 1;
             Image tempImage = GameObject.Find("Image" + j).GetComponent<Image>();
-            int current;
-            /*if (int.TryParse(local.layout.layout[i - 1], out current))
-            {
-                //
-            }
-            else
-            {
-            }*/
-            current = int.Parse(local.layout.layout[i]);
+            int current = int.Parse(local.layout.layout[i]);
+            tempImage.sprite = GameObject.Find("tile " + current).GetComponent<SpriteRenderer>().sprite;
+
             if (current == 1)
             {
-                tempImage.sprite = city.sprite;
                 positionAirplane = i;
             }
             else if (current == 2)
             {
-                tempImage.sprite = cave.sprite;
                 positionCave = i;
             }
             else if (current == 3 || current == 4 || current == 5)
             {
-                tempImage.sprite = village.sprite;
                 if(current == 3)
                 {
                     positionVillageA = i;
@@ -658,22 +655,18 @@ public class GameController : MonoBehaviour
             }
             else if (current == 6 || current == 7)
             {
-                tempImage.sprite = lake.sprite;
                 positionLake.Add(i);
             }
             else if (current >= 8 && current <= 13)
             {
-                tempImage.sprite = open.sprite;
                 positionOpen.Add(i);
             }
             else if (current == 14 || current == 15 || current == 16)
             {
-                tempImage.sprite = flowers.sprite;
                 positionPlants.Add(i);
             }
             else if (current > 16)
             {
-                tempImage.sprite = forest.sprite;
                 positionForest.Add(i);
             }
 
