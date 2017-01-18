@@ -90,7 +90,7 @@ public class GameController : MonoBehaviour
 
     // Use this for initialization
     void Start()
-    {
+    {        
         positionLake = new List<int>();
         positionOpen = new List<int>();
         positionFlowers = new List<int>();
@@ -124,7 +124,13 @@ public class GameController : MonoBehaviour
         Image newImage = newImageObject.GetComponent<Image>();
 
         placeholderImage.sprite = newImage.sprite;
+
+        Image jeep = GameObject.Find("JeepImage").GetComponent<Image>();
+        Image hat = GameObject.Find("HatImage").GetComponent<Image>();
         
+        jeep.sprite = GameObject.Find("Jeep" + PlayerState.vehicle).GetComponent<Image>().sprite;
+        hat.sprite = GameObject.Find("Hat" + PlayerState.hat).GetComponent<Image>().sprite;
+
         defineCodeQuests();
     }
 
@@ -372,6 +378,11 @@ public class GameController : MonoBehaviour
 
     public void openMap()
     {
+        if (MapMid.activeSelf)
+        {
+            MapMid.SetActive(false);
+            return;
+        }
         MapMid.SetActive(true);
         updateMiniMap();
     }
@@ -773,5 +784,25 @@ public class GameController : MonoBehaviour
             local.quests[i].turnInPosition = positionVillageC;
         }
         Debug.Log(JsonUtility.ToJson(local.quests[i]));
+    }
+
+    public void exitGame()
+    {
+        SceneManager.LoadScene("main");
+    }
+
+    public void toggleSound()
+    {
+        Image soundImage = GameObject.Find("SoundBtn").GetComponent<Image>();
+        if (PlayerState.sound)
+        {
+            PlayerState.sound = false;
+            soundImage.sprite = GameObject.Find("SoundOff").GetComponent<Image>().sprite;
+        }
+        else if (!PlayerState.sound)
+        {
+            PlayerState.sound = true;
+            soundImage.sprite = GameObject.Find("SoundOn").GetComponent<Image>().sprite;
+        }
     }
 }
