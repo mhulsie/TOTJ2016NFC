@@ -99,6 +99,7 @@ public class GameController : MonoBehaviour
         positionBirds = new List<int>();
         positionPlants = new List<int>();
         PlayerState.energy = 15;
+        PlayerState.clues = 0;
         encounteredIncident = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
@@ -350,6 +351,7 @@ public class GameController : MonoBehaviour
                 if (PlayerState.blueQuest.turnInPoint == "")
                 {
                     PlayerState.blueQuest.progress = 3;
+                    PlayerState.clues++;
                 }
             }
         }
@@ -361,6 +363,7 @@ public class GameController : MonoBehaviour
                 if (PlayerState.redQuest.turnInPoint == "")
                 {
                     PlayerState.redQuest.progress = 3;
+                    PlayerState.clues++;
                 }
             }
         }
@@ -372,6 +375,7 @@ public class GameController : MonoBehaviour
                 if (PlayerState.greenQuest.turnInPoint == "")
                 {
                     PlayerState.greenQuest.progress = 3;
+                    PlayerState.clues++;
                 }
             }
         }
@@ -461,22 +465,125 @@ public class GameController : MonoBehaviour
     /// </summary>
     public void updateMiniMap()
     {
+        //reset colors
         Image tempImage;
         for (int i = 1; i < 31; i++)
         {
             Debug.Log(i);
             tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
-            tempImage.color = new Color(200, 0, 0);
+            tempImage.color = Color.white;
         }
 
-        if (PlayerState.redQuest.progress == 1) setColor(PlayerState.redQuest.doPosition, new Color(255, 0, 0));
-        else if (PlayerState.redQuest.progress == 2) setColor(PlayerState.redQuest.turnInPosition, new Color(255, 0, 0));
 
-        if (PlayerState.blueQuest.progress == 1) setColor(PlayerState.blueQuest.doPosition, new Color(0, 255, 0));
-        else if (PlayerState.blueQuest.progress == 2) setColor(PlayerState.blueQuest.turnInPosition, new Color(0, 255, 0));
+        int treasureCol = local.board.treasureT.tile % 6;
+        float treasureRow = Mathf.Floor(local.board.treasureT.tile / 6);
 
-        if (PlayerState.greenQuest.progress == 1) setColor(PlayerState.greenQuest.doPosition, new Color(0, 0, 255));
-        else if (PlayerState.greenQuest.progress == 2) setColor(PlayerState.greenQuest.turnInPosition, new Color(0, 0, 255));
+        Debug.Log(treasureCol);
+        Debug.Log(treasureRow);
+
+        //clues
+        //first clues
+        if (PlayerState.clues > 0)
+        {
+
+            if (treasureCol == 0)
+            {
+                colorColumn(0);
+                colorColumn(1);
+                colorColumn(2);
+            }
+
+            if(treasureCol>0 && treasureCol < 5)
+            {
+                colorColumn(treasureCol - 1);
+                colorColumn(treasureCol);
+                colorColumn(treasureCol + 1);
+            }
+
+            if(treasureCol == 5)
+            {
+                colorColumn(3);
+                colorColumn(4);
+                colorColumn(5);
+            }
+
+            //second clue
+            if(PlayerState.clues > 1)
+            {
+
+                if(treasureRow == 0)
+                {
+                    colorRow(0);
+                    colorRow(1);
+                    colorRow(2);
+                }
+
+                if(treasureRow>0 && treasureRow < 4)
+                {
+                    colorRow(treasureRow - 1);
+                    colorRow(treasureRow);
+                    colorRow(treasureRow + 1);
+                }
+
+                if(treasureRow == 4)
+                {
+                    colorRow(2);
+                    colorRow(3);
+                    colorRow(4);
+                }
+
+                //third clue
+                if (PlayerState.clues > 2)
+                {
+                    setColor(treasure.tile, Color.black);
+                }
+            }
+        }
+
+
+        //set next quest point to color of quest
+        if(PlayerState.blueQuest.progress == 1)
+        {
+            setColor(PlayerState.blueQuest.doPosition, Color.blue);
+        }
+        else if(PlayerState.blueQuest.progress == 2)
+        {
+            if(PlayerState.blueQuest.turnInPoint != "")
+            {
+                setColor(PlayerState.blueQuest.turnInPosition, Color.blue);
+            }
+        }
+
+        if(PlayerState.redQuest.progress == 1)
+        {
+            setColor(PlayerState.redQuest.doPosition, Color.red);
+        }
+        else if(PlayerState.redQuest.progress == 2)
+        {
+            if(PlayerState.redQuest.turnInPoint != "")
+            {
+                setColor(PlayerState.redQuest.turnInPosition, Color.red);
+            }
+        }
+
+        if (PlayerState.greenQuest.progress == 1)
+        {
+            setColor(PlayerState.greenQuest.doPosition, Color.green);
+        }
+        else if (PlayerState.greenQuest.progress == 2)
+        {
+            if (PlayerState.greenQuest.turnInPoint != "")
+            {
+                setColor(PlayerState.greenQuest.turnInPosition, Color.green);
+            }
+        }
+
+        //set color to white on current position
+        int currentpos = local.players.list[currentTurn].currentPosition;
+        if (currentpos != -1)
+        {
+            setColor(local.players.list[currentTurn].currentPosition, Color.grey);
+        }
     }
 
 
@@ -485,6 +592,104 @@ public class GameController : MonoBehaviour
         p++;
         Image i = GameObject.Find("Image" + p).GetComponent<Image>();
         i.color = c;
+    }
+
+    public void colorColumn(int col)
+    {
+        Color color = Color.green;
+
+        if(col == 0)
+        {
+            for(int i = 0; i<=24; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if(col == 1)
+        {
+            for (int i = 1; i <= 25; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if(col == 2)
+        {
+            for (int i = 2; i <= 26; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (col == 3)
+        {
+            for (int i = 3; i <= 27; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (col == 4)
+        {
+            for (int i = 4; i <= 28; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (col == 5)
+        {
+            for (int i = 5; i <= 29; i += 6)
+            {
+                setColor(i, color);
+            }
+        }
+    }
+
+    public void colorRow(float row)
+    {
+        Color color = Color.green;
+
+        if(row == 0)
+        {
+            for(int i=0; i<=5; i++)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (row == 1)
+        {
+            for (int i = 6; i <= 11; i++)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (row == 2)
+        {
+            for (int i = 12; i <= 17; i++)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (row == 3)
+        {
+            for (int i = 18; i <= 23; i++)
+            {
+                setColor(i, color);
+            }
+        }
+
+        if (row == 4)
+        {
+            for (int i = 24; i <= 29; i++)
+            {
+                setColor(i, color);
+            }
+        }
     }
 
     public void OnMove(string result)
@@ -637,9 +842,9 @@ public class GameController : MonoBehaviour
 
     public void setMap()
     {
-        local.layout.layout.RemoveAt(0);
-        local.layout.layout[0] = "11";
-        local.layout.layout.Add("8");
+        //local.layout.layout.RemoveAt(0);
+        //local.layout.layout[0] = "11";
+        //local.layout.layout.Add("8");
 
         MapMid.SetActive(true);
         for (int i = 0; i < 30; i++)
