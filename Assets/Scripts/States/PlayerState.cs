@@ -12,5 +12,6 @@
     public static Quest greenQuest;
     public static Quest energyQuest;
     public static bool sound;
+    public static int clues;
 }
 
