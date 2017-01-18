@@ -24,7 +24,7 @@ public class JoinController : MonoBehaviour {
     {
         if (roomName.text != "")
         {
-            string resultRoom = SQL.Instance.getData("SELECT * FROM `room` WHERE name = '" + roomName.text + "'and active = 'true'");
+            string resultRoom = SQL.Instance.executeQuery("SELECT * FROM `room` WHERE name = '" + roomName.text + "'and active = 'true'");
             if (resultRoom != "TRUE")
             {
                 Room room = JsonUtility.FromJson<Room>(resultRoom);
@@ -38,7 +38,7 @@ public class JoinController : MonoBehaviour {
                     RoomState.players = room.players;
                     Debug.Log(room.players);
 
-                    string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
+                    string currentPlayers = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
                     string[] current = currentPlayers.Split('*');
                     if (current.Length < room.players)
                     {
@@ -63,7 +63,7 @@ public class JoinController : MonoBehaviour {
                                 RoomState.p4 = JsonUtility.FromJson<Player>(current[3]);
                                 break;
                         }
-                        SQL.Instance.getData("UPDATE `account` SET `roomID` = " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
+                        SQL.Instance.executeQuery("UPDATE `account` SET `roomID` = " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
                         SceneManager.LoadScene("lobby");
                     }
                     else

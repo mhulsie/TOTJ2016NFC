@@ -32,7 +32,7 @@ public class LocalLibrary
     {
         quests = new List<Quest>();
 
-        string questsResult = SQL.Instance.getData("select * from quest");
+        string questsResult = SQL.Instance.executeQuery("select * from quest");
         Debug.Log(questsResult);
         if(questsResult != "TRUE")
         {
@@ -44,7 +44,7 @@ public class LocalLibrary
             }
         }
 
-        string incidentsResult = SQL.Instance.getData("select * from incident");
+        string incidentsResult = SQL.Instance.executeQuery("select * from incident");
         incidents.list = new List<Incident>();
         if (incidentsResult != "TRUE")
         {
@@ -54,12 +54,12 @@ public class LocalLibrary
                 incidents.list.Add(UnityEngine.JsonUtility.FromJson<Incident>(incident));
             }
         }
-        board = JsonUtility.FromJson<Board>(SQL.Instance.getData("select * from board where roomID =" + RoomState.id));
+        board = JsonUtility.FromJson<Board>(SQL.Instance.executeQuery("select * from board where roomID =" + RoomState.id));
         board.treasureT = JsonUtility.FromJson<Treasure>(board.treasure);
         players = JsonUtility.FromJson<playerWrapper>(board.players);
         
         Debug.Log("insert qwuery " + "INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
-        SQL.Instance.getData("INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
 
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
     }

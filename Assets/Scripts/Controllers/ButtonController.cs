@@ -29,6 +29,8 @@ public class ButtonController : MonoBehaviour {
     //Main
     public void switchPanel(GameObject panel)
     {
+        //string cipherData = "1gw0Ap0k4iHpwl8S7ZFjAJGLZnX4dToR2h0T9oI/OL9dhM2IB1jSqOKjjyadw4kqTdcqmlDFXHa1CKI3fcRXbQ==";
+        //Debug.Log(SQL.Encrypt("UPDATE `board` SET `boardID`=[value-1],`active`=[value-2],`roomID`=[value-3],`layout`=[value-4],`turn`=[value-5],`players`=[value-6],`treasure`=[value-7],`incidents`=[value-8],`animals`=[value-9] WHERE 1")); 
         if (PlayerState.name == null || PlayerState.name == "")
         {
             target = panel;
@@ -92,7 +94,7 @@ public class ButtonController : MonoBehaviour {
         room = new Room();
         if (roomName.text != "")
         {
-            string roomID = SQL.Instance.getData("select roomID as result from room where name = '" + roomName.text + "' and active = 'true'");
+            string roomID = SQL.Instance.executeQuery("select roomID as result from room where name = '" + roomName.text + "' and active = 'true'");
             if (roomID != "TRUE")
             {
                 toggleError("Deze kamernaam is al in gebruik");
@@ -110,10 +112,10 @@ public class ButtonController : MonoBehaviour {
                 RoomState.active = "true";
                 RoomState.host = PlayerState.id;
 
-                SQL.Instance.getData("INSERT INTO `room`(`name`, `active`, `players`, `host`, `started`) VALUES ('" + room.name + "', 'true', " + room.players + "," + room.host + ", 'false')");
-                int.TryParse(SQL.Instance.getData("select max(roomID) as result from room"), out RoomState.id);
+                SQL.Instance.executeQuery("INSERT INTO `room`(`name`, `active`, `players`, `host`, `started`) VALUES ('" + room.name + "', 'true', " + room.players + "," + room.host + ", 'false')");
+                int.TryParse(SQL.Instance.executeQuery("select max(roomID) as result from room"), out RoomState.id);
 
-                SQL.Instance.getData("UPDATE `account` SET `roomID`= " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
+                SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
                 switchPanel(lobby);
             }
         }
@@ -137,8 +139,8 @@ public class ButtonController : MonoBehaviour {
         }
         else
         {
-            SQL.Instance.getData("INSERT INTO account (`nickName`) VALUES ('" + PlayerState.name + "')");
-            int.TryParse(SQL.Instance.getData("select max(accountID) as result from account"), out PlayerState.id);
+            SQL.Instance.executeQuery("INSERT INTO account (`nickName`) VALUES ('" + PlayerState.name + "')");
+            int.TryParse(SQL.Instance.executeQuery("select max(accountID) as result from account"), out PlayerState.id);
             switchPanel(target);
             player.gameObject.SetActive(false);
         }
@@ -155,7 +157,7 @@ public class ButtonController : MonoBehaviour {
         lobbyStartBtn.gameObject.SetActive(false);
         if (joinRoom.text.Length > 0)
         {
-            string resultRoom = SQL.Instance.getData("SELECT * FROM `room` WHERE name = '" + joinRoom.text + "'and active = 'true'");
+            string resultRoom = SQL.Instance.executeQuery("SELECT * FROM `room` WHERE name = '" + joinRoom.text + "'and active = 'true'");
             if (resultRoom != "TRUE")
             {
                 Room room = JsonUtility.FromJson<Room>(resultRoom);
@@ -168,7 +170,7 @@ public class ButtonController : MonoBehaviour {
                     RoomState.active = room.active;
                     RoomState.players = room.players;
 
-                    string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
+                    string currentPlayers = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
                     string[] current = currentPlayers.Split('*');
                     if (current.Length < room.players)
                     {
@@ -193,7 +195,7 @@ public class ButtonController : MonoBehaviour {
                                 RoomState.p4 = JsonUtility.FromJson<Player>(current[3]);
                                 break;
                         }
-                        SQL.Instance.getData("UPDATE `account` SET `roomID` = " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
+                        SQL.Instance.executeQuery("UPDATE `account` SET `roomID` = " + RoomState.id + " WHERE accountID = '" + PlayerState.id + "'");
                         switchPanel(lobby);
                     }
                     else
@@ -229,19 +231,19 @@ public class ButtonController : MonoBehaviour {
         lobbyStartBtn.gameObject.SetActive(true);
         if (RoomState.p1 != new Player())
         {
-            SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p1.accountID);
+            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p1.accountID);
         }
         if (RoomState.p2 != new Player())
         {
-            SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p2.accountID);
+            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p2.accountID);
         }
         if (RoomState.p3 != new Player())
         {
-            SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p3.accountID);
+            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p3.accountID);
         }
         if (RoomState.p4 != new Player())
         {
-            SQL.Instance.getData("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p4.accountID);
+            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p4.accountID);
         }
         switchPanel(main);
     }
@@ -271,7 +273,7 @@ public class ButtonController : MonoBehaviour {
             {
                 if (RoomState.host != PlayerState.id)
                 {
-                    string started = SQL.Instance.getData("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
+                    string started = SQL.Instance.executeQuery("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
                     if(started == "true")
                     {
                         SceneManager.LoadScene("game");
@@ -279,7 +281,7 @@ public class ButtonController : MonoBehaviour {
                 }
                 lobbyPullTimer = 0;
 
-                string currentPlayers = SQL.Instance.getData("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
+                string currentPlayers = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
                 string[] current = currentPlayers.Split('*');
                 RoomState.currentPlayers = current.Length;
                 RoomState.p1 = new Player();

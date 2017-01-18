@@ -25,9 +25,9 @@ public class GameController : MonoBehaviour
     public struct playerWrapper { public List<Player> list; };
     public playerWrapper players;
 
-    [System.Serializable]
+    /*[System.Serializable]
     public struct incidentWrapper { public List<Incident> list; };
-    public incidentWrapper incidents;
+    public incidentWrapper incidents;*/
 
     public int pullTimer = -1;
     public LocalLibrary local;
@@ -36,6 +36,7 @@ public class GameController : MonoBehaviour
 
     public Text debugtestText;
 
+    public Text popupText;
     //Incidnets
     public Text title;
     public Text description;
@@ -112,8 +113,8 @@ public class GameController : MonoBehaviour
             {
                 item.tile = (int)Random.Range(1f, 30f);
             }
-            SQL.Instance.getData("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
-            SQL.Instance.getData("UPDATE room set started = 'true' where roomID = " + RoomState.id);
+            SQL.Instance.executeQuery("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
+            SQL.Instance.executeQuery("UPDATE room set started = 'true' where roomID = " + RoomState.id);
         }
         
         setMap();
@@ -145,7 +146,7 @@ public class GameController : MonoBehaviour
         if ((pullTimer > 120 || pullTimer == -1) && !myTurn)
         {
             pullTimer = 0;
-            int.TryParse(SQL.Instance.getData("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
+            int.TryParse(SQL.Instance.executeQuery("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
             if(currentTurn == 100)
             {
                 tempDialogue.title = "Te laat";
@@ -156,6 +157,9 @@ public class GameController : MonoBehaviour
             }
             if (PlayerState.id == local.players.list[currentTurn].accountID)
             {
+
+                local.board = JsonUtility.FromJson<Board>(SQL.Instance.executeQuery("select * from board where roomID =" + RoomState.id));
+                local.incidents = JsonUtility.FromJson<LocalLibrary.incidentWrapper>(local.board.incidents);
                 if (PlayerState.energy == 0)
                 {
                     tempDialogue.title = "Benzine op";
@@ -182,12 +186,12 @@ public class GameController : MonoBehaviour
 
     public void submitGameState()
     {
-        SQL.Instance.getData("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
     }
 
     public GameState getGameState()
     {
-        return JsonUtility.FromJson<GameState>(SQL.Instance.getData("select Gamestate from board where roomID = " + RoomState.id));
+        return JsonUtility.FromJson<GameState>(SQL.Instance.executeQuery("select Gamestate from board where roomID = " + RoomState.id));
     }
 
     #region ActionPanels
@@ -215,7 +219,7 @@ public class GameController : MonoBehaviour
         
         myTurn = false;
         string incidentsJson = JsonUtility.ToJson(local.incidents);
-        SQL.Instance.getData("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
     }
     #endregion
 
@@ -228,12 +232,10 @@ public class GameController : MonoBehaviour
         Quest bq = PlayerState.blueQuest;
         Quest rq = PlayerState.redQuest;
         Quest gq = PlayerState.greenQuest;
-        //Quest eq = PlayerState.energyQuest;
 
         checkQuest(bq, currentPosition);
         checkQuest(rq, currentPosition);
         checkQuest(gq, currentPosition);
-        //checkQuest(eq, currentPosition);
         
         if(tempQuest != null)
         {
@@ -424,7 +426,7 @@ public class GameController : MonoBehaviour
             tempDialogue.image = "Treasure";
             togglePopUp();
             //Update database
-            SQL.Instance.getData("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
+            SQL.Instance.executeQuery("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
         }
     }
     public void questCheckMap(bool b)
@@ -506,13 +508,11 @@ public class GameController : MonoBehaviour
             {
                 if (scanPosition == currentPosition)
                 {
+                    popupText.text = "Klaar met bewegen";
                     PlayerState.movedIncorrect = false;
                     PlayerState.validMove = true;
                     endTurn();
-                }
-                else
-                {
-                    //debugtestText.text = " nog steeds foute tegel";
+                    return;
                 }
             }
             else if (currentPosition != scanPosition && PlayerState.energy > 0)
@@ -549,11 +549,12 @@ public class GameController : MonoBehaviour
             }
             else if (currentPosition == scanPosition && PlayerState.energy > 0)
             {
+                changeEnergy(1);
                 PlayerState.validMove = true;
             }
             if (!PlayerState.validMove && PlayerState.energy > 0)
             {
-                debugtestText.text = " verkeerde beweging";
+                popupText.text = "Ga terug naar je goede positie";  
                 PlayerState.movedIncorrect = true;
                 // show return phone to old place dialogue
             }
@@ -575,6 +576,9 @@ public class GameController : MonoBehaviour
                         tempDialogue.button = encounteredIncident.button;
                         tempDialogue.image = "Elephant";
                         togglePopUp();
+                        int randomTile;
+                        int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
+                        i.tile = randomTile;
                     }
                 }
                 if (PlayerState.energy == 0)
@@ -601,6 +605,10 @@ public class GameController : MonoBehaviour
             {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
+                while (randomTile == positionVillageA || randomTile == positionVillageB || randomTile == positionVillageC)
+                {
+                    int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
+                }
                 i.tile = randomTile;
             }
         }
@@ -803,6 +811,22 @@ public class GameController : MonoBehaviour
         {
             PlayerState.sound = true;
             soundImage.sprite = GameObject.Find("SoundOn").GetComponent<Image>().sprite;
+        }
+    }
+
+    public void setTrap()
+    {
+        if(PlayerState.activeTrap == false)
+        {
+            PlayerState.activeTrap = true;
+            Incident trap = new Incident();
+            trap.tile = local.players.list[currentTurn].currentPosition;
+            trap.name = "Trap" + PlayerState.id;
+            trap.action = "End";
+            trap.title = "Oh nee, een val!";
+            trap.description = "Je bent in een val gereden. Gebruik de rest van je beurt om vrij te komen.";
+            trap.button = "Bevrijd jezelf";
+            local.incidents.list.Add(trap);
         }
     }
 }

@@ -21,7 +21,7 @@ public class GameState : MonoBehaviour  {
 
             //TODO calc events and items
 
-            SQL.Instance.getData("UPDATE `totj`.`room` SET `started` = 'true' WHERE `room`.`roomID` = " + RoomState.id);
+            SQL.Instance.executeQuery("UPDATE `totj`.`room` SET `started` = 'true' WHERE `room`.`roomID` = " + RoomState.id);
             submitGameState();
     }
 
@@ -76,11 +76,11 @@ public class GameState : MonoBehaviour  {
 
     public void submitGameState()
     {
-        SQL.Instance.getData("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
     }
 
     public GameState getGameState()
     {
-        return JsonUtility.FromJson<GameState>(SQL.Instance.getData("select Gamestate from board where roomID = " + RoomState.id));
+        return JsonUtility.FromJson<GameState>(SQL.Instance.executeQuery("select Gamestate from board where roomID = " + RoomState.id));
     }
 }
