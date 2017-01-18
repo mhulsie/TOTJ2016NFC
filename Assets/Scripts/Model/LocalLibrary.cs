@@ -62,7 +62,5 @@ public class LocalLibrary
         SQL.Instance.getData("INSERT INTO `board`(`incidents`) VALUES ('" + JsonUtility.ToJson(incidents) + "') WHERE roomID = " + RoomState.id);
 
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
-        Debug.Log(layout.layout[0]);
-
     }
 }
