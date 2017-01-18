@@ -22,6 +22,10 @@ public class ButtonController : MonoBehaviour {
     public Button backBtn;
     public Button homeBtn;
 
+    public Image p2Edge;
+    public Image p3Edge;
+    public Image p4Edge;
+
     //Main
     public void switchPanel(GameObject panel)
     {
@@ -59,13 +63,28 @@ public class ButtonController : MonoBehaviour {
 
     #region HostLogic
     public Text roomName;
-    private int players;
+    private int players = 2;
     public Room room;
 
     //Host
     public void setPlayers(int i)
     {
         this.players = i;
+        p2Edge.gameObject.SetActive(false);
+        p3Edge.gameObject.SetActive(false);
+        p4Edge.gameObject.SetActive(false);
+        if (i == 2)
+        {
+            p2Edge.gameObject.SetActive(true);
+        }
+        else if(i == 3)
+        {
+            p3Edge.gameObject.SetActive(true);
+        }
+        else if (i == 4)
+        {
+            p4Edge.gameObject.SetActive(true);
+        }
     }
     //host
     public void CreateLobby()
@@ -115,9 +134,9 @@ public class ButtonController : MonoBehaviour {
         if (playerName.text == "")
         {
             toggleError("Vul een spelernaam in.");
-        } else
+        }
+        else
         {
-
             SQL.Instance.getData("INSERT INTO account (`nickName`) VALUES ('" + PlayerState.name + "')");
             int.TryParse(SQL.Instance.getData("select max(accountID) as result from account"), out PlayerState.id);
             switchPanel(target);
