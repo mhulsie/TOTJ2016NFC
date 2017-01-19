@@ -199,6 +199,7 @@ public class BoardController : MonoBehaviour
             
             //Execute the query
             SQL.Instance.executeQuery("INSERT INTO `board`(`active`, `roomID`, `layout`, `turn`, `players`, `treasure`, `incidents`) VALUES('true','" + RoomState.id + "','" + layoutJson + "',0,'" + playersJson + "','" + treasureJson + "','" + incidentsJson + "')");
+            SQL.Instance.executeQuery("UPDATE `room` set started = 'true' where roomID = " + RoomState.id);
             //Load the gamescene
             SceneManager.LoadScene("game");
         }

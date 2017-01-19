@@ -89,6 +89,7 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        DisplayEnergy();
         pullTimer++;
         if ((pullTimer > 120 || pullTimer == -1))
         {
@@ -137,12 +138,15 @@ public class GameController : MonoBehaviour
         }
 
         hasMoved = false;
-
+        Debug.Log("turn voor" + local.turn);
         local.turn++;
+        Debug.Log("turn na" + local.turn);
         if (local.turn == local.players.list.Count)
         {
             AnimalDance();
+            Debug.Log("turn voor 0 set " + local.turn);
             local.turn = 0;
+            Debug.Log("turn na 0 set " + local.turn);
         }
         MoveAction.SetActive(false);
         IncidentPopup.SetActive(false);
@@ -154,8 +158,6 @@ public class GameController : MonoBehaviour
         
         Debug.Log("UPDATE board set turn = " + local.turn + ", incidents = '" + JsonUtility.ToJson(local.incidents) + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
         SQL.Instance.executeQuery("UPDATE `board` set `turn` = " + local.turn + ", `incidents` = '" + JsonUtility.ToJson(local.incidents) + "', `players` = '" + JsonUtility.ToJson(local.players) + "'  where `roomID` = " + RoomState.id);
-
-        //SQL.Instance.executeQuery("UPDATE board set turn = " + local.turn + ", incidents = 'k', players = 'k'  where roomID = " + RoomState.id);
     }
 
     public void questBtn()
@@ -261,6 +263,7 @@ public class GameController : MonoBehaviour
         }
         else if (tempQuest != null)
         {
+            IncidentPopup.SetActive(false);
             advanceProgress();
             endTurn();
         }
@@ -428,7 +431,6 @@ public class GameController : MonoBehaviour
 
         //clues
         //first clues
-        PlayerState.clues = 3;
         if (PlayerState.clues > 0)
         {
 
@@ -479,7 +481,6 @@ public class GameController : MonoBehaviour
                 }
 
                 //third clue
-                PlayerState.clues = 3;
                 if (PlayerState.clues > 2)
                 {
                     setColor(local.treasure.tile, Color.black);
