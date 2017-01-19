@@ -84,16 +84,8 @@ public class LocalLibrary
             }
         }
 
-        string playersResult = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
         players.list = new List<Player>();
-        if (playersResult != "TRUE")
-        {
-            string[] playersSplitResult = playersResult.Split('*');
-            foreach (string player in playersSplitResult)
-            {
-                players.list.Add(JsonUtility.FromJson<Player>(player));
-            }
-        }
+        players = JsonUtility.FromJson<playerWrapper>(board.players);
 
         treasure = JsonUtility.FromJson<Treasure>(board.treasure);
         
