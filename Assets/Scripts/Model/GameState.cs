@@ -76,7 +76,7 @@ public class GameState : MonoBehaviour  {
 
     public void submitGameState()
     {
-        SQL.Instance.executeQuery("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("UPDATE `totj`.`board` SET `Gamestate` = '" + JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
     }
 
     public GameState getGameState()

@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
-    public int currentTurn;
     public Treasure treasure;
 
     public Text testText;
@@ -19,22 +18,9 @@ public class GameController : MonoBehaviour
     public GameObject MapMid;
     public GameObject IncidentPopup;
 
-    //private GameObject currentMid;
-
-    [System.Serializable]
-    public struct playerWrapper { public List<Player> list; };
-    public playerWrapper players;
-
-    /*[System.Serializable]
-    public struct incidentWrapper { public List<Incident> list; };
-    public incidentWrapper incidents;*/
-
     public int pullTimer = -1;
     public LocalLibrary local;
-    public bool myTurn = false;
     public bool hasMoved = false;
-
-    public Text debugtestText;
 
     public Text popupText;
     //Incidnets
@@ -43,7 +29,7 @@ public class GameController : MonoBehaviour
     public Text incidentBtn;
     public Image incidentImage;
     public Image ElephantPlaceHolder;
-    public Incident encounteredIncident;
+    public Incident encounteredIncident = null;
 
     //Energy Images
     public Image Energy0;
@@ -73,18 +59,9 @@ public class GameController : MonoBehaviour
     public Image flowers;
     public Image forest;
 
+    public bool myTurn;
+
     //Quests
-    public int positionVillageC;
-    public int positionVillageB;
-    public int positionVillageA;
-    public int positionAirplane;
-    public int positionCave;
-    public List<int> positionLake;
-    public List<int> positionOpen;
-    public List<int> positionFlowers;
-    public List<int> positionForest;
-    public List<int> positionBirds;
-    public List<int> positionPlants;
     public Quest tempQuest;
     public Dialogue tempDialogue = new Dialogue();
 
@@ -92,39 +69,14 @@ public class GameController : MonoBehaviour
     // Use this for initialization
     void Start()
     {        
-        positionLake = new List<int>();
-        positionOpen = new List<int>();
-        positionFlowers = new List<int>();
-        positionForest = new List<int>();
-        positionBirds = new List<int>();
-        positionPlants = new List<int>();
-        PlayerState.energy = 15;
-        PlayerState.clues = 0;
-        encounteredIncident = null;
         AndroidNFCReader.enableBackgroundScan();
         AndroidNFCReader.ScanNFC("GameController", "OnMove");
-
-        //currentMid = GameMid;
+        MapMid.SetActive(true);
         local = new LocalLibrary();
-        if (RoomState.host == PlayerState.id)
-        {
-            Random.InitState((int)System.DateTime.Now.Ticks);
-
-            foreach (Incident item in local.incidents.list)
-            {
-                item.tile = (int)Random.Range(1f, 30f);
-            }
-            SQL.Instance.executeQuery("UPDATE `board` SET `incidents`='" + JsonUtility.ToJson(local.incidents) + "' WHERE boardID = " + local.board.boardID);
-            SQL.Instance.executeQuery("UPDATE room set started = 'true' where roomID = " + RoomState.id);
-        }
-        
-        setMap();
         MapMid.SetActive(false);
 
-        int currentEnergy = PlayerState.energy;
-        GameObject newImageObject = GameObject.Find("Energy" + currentEnergy);
+        GameObject newImageObject = GameObject.Find("Energy" + PlayerState.energy);
         Image newImage = newImageObject.GetComponent<Image>();
-
         placeholderImage.sprite = newImage.sprite;
 
         Image jeep = GameObject.Find("JeepImage").GetComponent<Image>();
@@ -132,71 +84,51 @@ public class GameController : MonoBehaviour
         
         jeep.sprite = GameObject.Find("Jeep" + PlayerState.vehicle).GetComponent<Image>().sprite;
         hat.sprite = GameObject.Find("Hat" + PlayerState.hat).GetComponent<Image>().sprite;
-
-        defineCodeQuests();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Keep pulling to see if its my turn
-        // Dont pull if its my turn
-
-        DisplayEnergy();
         pullTimer++;
-        if ((pullTimer > 120 || pullTimer == -1) && !myTurn)
+        if ((pullTimer > 120 || pullTimer == -1))
         {
+            int turn = int.Parse(SQL.Instance.executeQuery("SELECT turn as `result` FROM `board` WHERE roomID =" + RoomState.id));
+            local.updateData();
             pullTimer = 0;
-            int.TryParse(SQL.Instance.executeQuery("SELECT turn as result FROM board WHERE boardID = " + local.board.boardID), out currentTurn);
-            if(currentTurn == 100)
+
+            if (local.players.list[turn].accountID == PlayerState.id)
+            {
+                myTurn = true;
+                startTurn();
+            }
+
+            if (local.turn == 100)
             {
                 tempDialogue.title = "Te laat";
                 tempDialogue.description = "Ai, een van je tegenstanders heeft de schat al gevonden. Helaas je verliest het spel.";
                 tempDialogue.button = "Ga naar het hoofdmenu";
                 tempDialogue.image = "TreasureL";
-
-            }
-            if (PlayerState.id == local.players.list[currentTurn].accountID)
-            {
-
-                local.board = JsonUtility.FromJson<Board>(SQL.Instance.executeQuery("select * from board where roomID =" + RoomState.id));
-                local.incidents = JsonUtility.FromJson<LocalLibrary.incidentWrapper>(local.board.incidents);
-                if (PlayerState.energy == 0)
-                {
-                    tempDialogue.title = "Benzine op";
-                    tempDialogue.description = "Oh nee, je brandstof is op.";
-                    tempDialogue.button = "Beeindig beurt";
-                    tempDialogue.image = "Elephant";
-                    togglePopUp();
-                }
-                else
-                {
-                    myTurn = true;
-                    MoveAction.SetActive(true);
-                }
+                togglePopUp();
             }
         }
-
-        //Start action panel sequence
     }
 
-    public void createGameState()
+    public void startTurn()
     {
-
+        if (PlayerState.energy == 0)
+        {
+            tempDialogue.title = "Benzine op";
+            tempDialogue.description = "Oh nee, je brandstof is op.";
+            tempDialogue.button = "Beeindig beurt";
+            tempDialogue.image = "Elephant";
+            togglePopUp();
+        }
+        else
+        {
+            MoveAction.SetActive(true);
+        }
     }
-
-    public void submitGameState()
-    {
-        SQL.Instance.executeQuery("UPDATE `totj`.`board` SET `Gamestate` = '" + UnityEngine.JsonUtility.ToJson(this) + "' where roomID = " + RoomState.id);
-    }
-
-    public GameState getGameState()
-    {
-        return JsonUtility.FromJson<GameState>(SQL.Instance.executeQuery("select Gamestate from board where roomID = " + RoomState.id));
-    }
-
-    #region ActionPanels
-
+    
     public void endTurn()
     {
         if (!hasMoved)
@@ -206,41 +138,42 @@ public class GameController : MonoBehaviour
 
         hasMoved = false;
 
-        currentTurn++;
-        if (currentTurn == local.players.list.Count)
+        local.turn++;
+        if (local.turn == local.players.list.Count)
         {
             AnimalDance();
-            currentTurn = 0;
+            local.turn = 0;
         }
         MoveAction.SetActive(false);
         IncidentPopup.SetActive(false);
         ChooseAction.SetActive(false);
         MapMid.SetActive(false);
         GameMid.SetActive(true);
-        
+
         myTurn = false;
-        string incidentsJson = JsonUtility.ToJson(local.incidents);
-        SQL.Instance.executeQuery("UPDATE board set turn = " + currentTurn + ", incidents = '" + incidentsJson + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
+        
+        Debug.Log("UPDATE board set turn = " + local.turn + ", incidents = '" + JsonUtility.ToJson(local.incidents) + "', players = '" + JsonUtility.ToJson(local.players) + "'  where roomID = " + RoomState.id);
+        SQL.Instance.executeQuery("UPDATE `board` set `turn` = " + local.turn + ", `incidents` = '" + JsonUtility.ToJson(local.incidents) + "', `players` = '" + JsonUtility.ToJson(local.players) + "'  where `roomID` = " + RoomState.id);
+
+        //SQL.Instance.executeQuery("UPDATE board set turn = " + local.turn + ", incidents = 'k', players = 'k'  where roomID = " + RoomState.id);
     }
-    #endregion
 
     public void questBtn()
     {
         tempQuest = null;
         tempDialogue = new Dialogue();
-        int currentPosition = local.players.list[currentTurn].currentPosition;
+        popupText.text = local.players.list[local.turn].currentPosition + "";
 
         Quest bq = PlayerState.blueQuest;
         Quest rq = PlayerState.redQuest;
         Quest gq = PlayerState.greenQuest;
 
-        checkQuest(bq, currentPosition);
-        checkQuest(rq, currentPosition);
-        checkQuest(gq, currentPosition);
+        checkQuest(bq, local.players.list[local.turn].currentPosition);
+        checkQuest(rq, local.players.list[local.turn].currentPosition);
+        checkQuest(gq, local.players.list[local.turn].currentPosition);
         
         if(tempQuest != null)
         {
-            debugtestText.text += "  " + tempQuest.type;
             if(tempQuest.progress == 0)
             {
                 tempDialogue = tempQuest.startDialogueD;
@@ -274,7 +207,7 @@ public class GameController : MonoBehaviour
         title.text = tempDialogue.title;
         description.text = tempDialogue.description;
         incidentBtn.text = tempDialogue.button;
-        incidentImage.sprite = GameObject.Find(tempDialogue.image).GetComponent<Image>().sprite;
+        //incidentImage.sprite = GameObject.Find(tempDialogue.image).GetComponent<Image>().sprite;
     }
 
     public void popUpBtn()
@@ -351,8 +284,11 @@ public class GameController : MonoBehaviour
                 if (PlayerState.blueQuest.turnInPoint == "")
                 {
                     PlayerState.blueQuest.progress = 3;
-                    PlayerState.clues++;
                 }
+            }
+            if(PlayerState.blueQuest.progress == 3)
+            {
+                PlayerState.clues++;
             }
         }
         if (tempQuest.type == PlayerState.redQuest.type)
@@ -363,8 +299,11 @@ public class GameController : MonoBehaviour
                 if (PlayerState.redQuest.turnInPoint == "")
                 {
                     PlayerState.redQuest.progress = 3;
-                    PlayerState.clues++;
                 }
+            }
+            if (PlayerState.redQuest.progress == 3)
+            {
+                PlayerState.clues++;
             }
         }
         if (tempQuest.type == PlayerState.greenQuest.type)
@@ -375,8 +314,11 @@ public class GameController : MonoBehaviour
                 if (PlayerState.greenQuest.turnInPoint == "")
                 {
                     PlayerState.greenQuest.progress = 3;
-                    PlayerState.clues++;
                 }
+            }
+            if (PlayerState.greenQuest.progress == 3)
+            {
+                PlayerState.clues++;
             }
         }
         tempQuest = null;
@@ -402,6 +344,7 @@ public class GameController : MonoBehaviour
     {
         MoveAction.SetActive(true);
     }
+
     public void closeMove()
     {
         MoveAction.SetActive(false);
@@ -411,6 +354,7 @@ public class GameController : MonoBehaviour
     {
         ChooseAction.SetActive(true);
     }
+
     public void closeAction()
     {
         ChooseAction.SetActive(false);
@@ -418,7 +362,7 @@ public class GameController : MonoBehaviour
 
     public void digTreasure()
     {
-        if((PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) == 9 && local.players.list[currentTurn].currentPosition == local.board.treasureT.tile)
+        if((PlayerState.blueQuest.progress + PlayerState.redQuest.progress + PlayerState.greenQuest.progress) == 9 && local.players.list[local.turn].currentPosition == local.treasure.tile)
         {
             MoveAction.SetActive(false);
             ChooseAction.SetActive(false);
@@ -433,6 +377,7 @@ public class GameController : MonoBehaviour
             SQL.Instance.executeQuery("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
         }
     }
+
     public void questCheckMap(bool b)
     {
         MapMid.SetActive(true);
@@ -469,20 +414,21 @@ public class GameController : MonoBehaviour
         Image tempImage;
         for (int i = 1; i < 31; i++)
         {
-            Debug.Log(i);
+            //Debug.Log(i);
             tempImage = GameObject.Find("Image" + i).GetComponent<Image>();
             tempImage.color = Color.white;
         }
 
 
-        int treasureCol = local.board.treasureT.tile % 6;
-        float treasureRow = Mathf.Floor(local.board.treasureT.tile / 6);
+        int treasureCol = local.treasure.tile % 6;
+        float treasureRow = Mathf.Floor(local.treasure.tile / 6);
 
-        Debug.Log(treasureCol);
-        Debug.Log(treasureRow);
+        //Debug.Log(treasureCol);
+        //Debug.Log(treasureRow);
 
         //clues
         //first clues
+        PlayerState.clues = 3;
         if (PlayerState.clues > 0)
         {
 
@@ -533,9 +479,10 @@ public class GameController : MonoBehaviour
                 }
 
                 //third clue
+                PlayerState.clues = 3;
                 if (PlayerState.clues > 2)
                 {
-                    setColor(treasure.tile, Color.black);
+                    setColor(local.treasure.tile, Color.black);
                 }
             }
         }
@@ -579,13 +526,12 @@ public class GameController : MonoBehaviour
         }
 
         //set color to white on current position
-        int currentpos = local.players.list[currentTurn].currentPosition;
-        if (currentpos != -1)
+        int currentpos = local.players.list[local.turn].currentPosition;
+        if (currentpos != 31)
         {
-            setColor(local.players.list[currentTurn].currentPosition, Color.grey);
+            setColor(local.players.list[local.turn].currentPosition, Color.grey);
         }
     }
-
 
     public void setColor(int p, Color c)
     {
@@ -694,19 +640,23 @@ public class GameController : MonoBehaviour
 
     public void OnMove(string result)
     {
+        if(local == null)
+        {
+            return;
+        }
         if (myTurn && IncidentPopup.activeSelf == false)
         {
             // Set Values
             int scan;
             int.TryParse(result, out scan);
-            int scanPosition = local.layout.layout.IndexOf(scan.ToString());
-            int currentPosition = local.players.list[currentTurn].currentPosition;
+            int scanPosition = local.layout.list.IndexOf(scan.ToString());
+            int currentPosition = local.players.list[local.turn].currentPosition;
             // If you scan a different tile
 
             //Find tile position in layout
-            if (currentPosition == -1)
+            if (currentPosition == 31)
             {
-                currentPosition = local.layout.layout.IndexOf(scan.ToString());
+                currentPosition = local.layout.list.IndexOf(scan.ToString());
                 PlayerState.validMove = true;
             }
             else if (PlayerState.movedIncorrect)
@@ -766,13 +716,14 @@ public class GameController : MonoBehaviour
             else if (PlayerState.validMove && PlayerState.energy > 0)
             {
                 // alter currenTile and energy
-                local.players.list[currentTurn].currentPosition = scanPosition;
+                local.players.list[local.turn].currentPosition = scanPosition;
+                Debug.Log("" + local.players.list[local.turn].currentPosition);
                 changeEnergy(-1);
                 PlayerState.validMove = false;
                 hasMoved = true;
-                foreach (Incident i in local.incidents.list)
+                /*foreach (Incident i in local.incidents.list)
                 {
-                    if (i.tile == local.players.list[currentTurn].currentPosition)
+                    if (i.tile == local.players.list[local.turn].currentPosition)
                     {
                         encounteredIncident = i;
 
@@ -785,7 +736,7 @@ public class GameController : MonoBehaviour
                         int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
                         i.tile = randomTile;
                     }
-                }
+                }*/
                 if (PlayerState.energy == 0)
                 {
                     tempDialogue.title = "Benzine op";
@@ -796,7 +747,7 @@ public class GameController : MonoBehaviour
                 }
                 else
                 {
-                    debugtestText.text = "correcte beweging, ga nog eens" + PlayerState.blueQuest.progress + " " + PlayerState.redQuest.progress + " " + PlayerState.greenQuest.progress + "          " + PlayerState.energy;
+                    popupText.text = local.players.list[local.turn].currentPosition.ToString();
                 }
             }
         }
@@ -810,7 +761,7 @@ public class GameController : MonoBehaviour
             {
                 int randomTile;
                 int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
-                while (randomTile == positionVillageA || randomTile == positionVillageB || randomTile == positionVillageC)
+                while (randomTile == local.positionVillageA || randomTile == local.positionVillageB || randomTile == local.positionVillageC)
                 {
                     int.TryParse(UnityEngine.Random.Range(1f, 30f).ToString("0"), out randomTile);
                 }
@@ -839,166 +790,7 @@ public class GameController : MonoBehaviour
             PlayerState.energy = 15;
         }
     }
-
-    public void setMap()
-    {
-        //local.layout.layout.RemoveAt(0);
-        //local.layout.layout[0] = "11";
-        //local.layout.layout.Add("8");
-
-        MapMid.SetActive(true);
-        for (int i = 0; i < 30; i++)
-        {
-            int j = i + 1;
-            Image tempImage = GameObject.Find("Image" + j).GetComponent<Image>();
-            int current = int.Parse(local.layout.layout[i]);
-            tempImage.sprite = GameObject.Find("tile " + current).GetComponent<SpriteRenderer>().sprite;
-
-            if (current == 1)
-            {
-                positionAirplane = i;
-            }
-            else if (current == 2)
-            {
-                positionCave = i;
-            }
-            else if (current == 3 || current == 4 || current == 5)
-            {
-                if(current == 3)
-                {
-                    positionVillageA = i;
-                }
-                else if(current == 4)
-                {
-                    positionVillageB = i;
-                }
-                else if(current == 5)
-                {
-                    positionVillageC = i;
-                }
-            }
-            else if (current == 6 || current == 7)
-            {
-                positionLake.Add(i);
-            }
-            else if (current >= 8 && current <= 13)
-            {
-                positionOpen.Add(i);
-            }
-            else if (current == 14 || current == 15 || current == 16)
-            {
-                positionPlants.Add(i);
-            }
-            else if (current > 16)
-            {
-                positionForest.Add(i);
-            }
-
-            if(current == 8 || current == 9 || current == 10 || current == 14 || current == 20|| current == 22 || current == 30)
-            {
-                positionBirds.Add(i);
-            }
-            if(current == 17 || current == 18 || current == 19)
-            {
-                positionFlowers.Add(i);
-            }
-        }
-        MapMid.SetActive(false);
-    }
-
-    public void defineCodeQuests()
-    {
-        int turn = 0;
-        foreach (Player item in local.players.list)
-        {
-            if (item.accountID != PlayerState.id)
-            {
-                turn++;
-            }
-        }
-
-        setRandomTile(turn);
-        setRandomTile(turn + 4);
-        setRandomTile(turn + 8);
-
-        PlayerState.redQuest = local.quests[turn];
-        PlayerState.greenQuest = local.quests[turn + 4];
-        PlayerState.blueQuest = local.quests[turn + 8];
-
-        PlayerState.redQuest.progress = 0;
-        PlayerState.greenQuest.progress = 0;
-        PlayerState.blueQuest.progress = 0;
-
-        PlayerState.redQuest.startDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.startDialogue);
-        PlayerState.redQuest.doDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.doDialogue);
-        PlayerState.redQuest.turnInDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.turnInDialogue);
-
-        PlayerState.blueQuest.startDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.blueQuest.startDialogue);
-        PlayerState.blueQuest.doDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.blueQuest.doDialogue);
-        PlayerState.blueQuest.turnInDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.blueQuest.turnInDialogue);
-
-        PlayerState.greenQuest.startDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.greenQuest.startDialogue);
-        PlayerState.greenQuest.doDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.greenQuest.doDialogue);
-        PlayerState.greenQuest.turnInDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.greenQuest.turnInDialogue);
-    }
-
-    public void setRandomTile(int i)
-    {
-        if(local.quests[i].startPoint == "3")
-        {
-            local.quests[i].startPosition = positionVillageA;
-        }
-        else if (local.quests[i].startPoint == "4")
-        {
-            local.quests[i].startPosition = positionVillageB;
-        }
-        else if (local.quests[i].startPoint == "5")
-        {
-            local.quests[i].startPosition = positionVillageC;
-        }
-
-        switch (local.quests[i].doPoint)
-        {
-            case "cave":
-                local.quests[i].doPosition = positionCave;
-                break;
-            case "villageBlue":
-                local.quests[i].doPosition = positionVillageB;
-                break;
-            case "villageGreen":
-                local.quests[i].doPosition = positionVillageA;
-                break;
-            case "airplane":
-                local.quests[i].doPosition = positionAirplane;
-                break;
-            case "birds":
-                local.quests[i].doPosition = positionBirds[(int)Random.Range(0f, positionBirds.Count -1)];
-                break;
-            case "plants":
-                local.quests[i].doPosition = positionPlants[(int)Random.Range(0f, positionPlants.Count - 1)];
-                break;
-            case "flowers":
-                local.quests[i].doPosition = positionFlowers[(int)Random.Range(0f, positionFlowers.Count - 1)];
-                break;
-            case "water":
-                local.quests[i].doPosition = positionLake[(int)Random.Range(0f, positionLake.Count - 1)];
-                break;
-        }
-        if (local.quests[i].turnInPoint == "3")
-        {
-            local.quests[i].turnInPosition = positionVillageA;
-        }
-        else if (local.quests[i].turnInPoint == "4")
-        {
-            local.quests[i].turnInPosition = positionVillageB;
-        }
-        else if (local.quests[i].turnInPoint == "5")
-        {
-            local.quests[i].turnInPosition = positionVillageC;
-        }
-        Debug.Log(JsonUtility.ToJson(local.quests[i]));
-    }
-
+        
     public void exitGame()
     {
         SceneManager.LoadScene("main");
@@ -1025,7 +817,7 @@ public class GameController : MonoBehaviour
         {
             PlayerState.activeTrap = true;
             Incident trap = new Incident();
-            trap.tile = local.players.list[currentTurn].currentPosition;
+            trap.tile = local.players.list[local.turn].currentPosition;
             trap.name = "Trap" + PlayerState.id;
             trap.action = "End";
             trap.title = "Oh nee, een val!";
