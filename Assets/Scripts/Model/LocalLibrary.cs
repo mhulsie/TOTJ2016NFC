@@ -57,16 +57,13 @@ public class LocalLibrary
     /// </summary>
     public void updateData()
     {
-        string incidentsResult = SQL.Instance.executeQuery("select * from incident");
+        string boardResult = SQL.Instance.executeQuery("select * from board where roomID =" + RoomState.id);
+        board = JsonUtility.FromJson<Board>(boardResult);
+        
         incidents.list = new List<Incident>();
-        if (incidentsResult != "TRUE")
-        {
-            string[] incidentSplitResult = incidentsResult.Split('*');
-            foreach (string incident in incidentSplitResult)
-            {
-                incidents.list.Add(JsonUtility.FromJson<Incident>(incident));
-            }
-        }
+        incidents = JsonUtility.FromJson<incidentWrapper>(board.incidents);
+
+        turn = board.turn;
     }
     /// <summary>
     /// Gets the permanent data
