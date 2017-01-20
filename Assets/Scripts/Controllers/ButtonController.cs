@@ -4,7 +4,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ButtonController : MonoBehaviour {
-    //Main
+    /// <summary>
+    /// The panels for each part of the main menu
+    /// </summary>
     public GameObject main;
     public GameObject host;
     public GameObject join;
@@ -14,23 +16,41 @@ public class ButtonController : MonoBehaviour {
     public GameObject lobby;
     public GameObject board;
     public GameObject error;
+
+    /// <summary>
+    /// The text element for the encountered error
+    /// </summary>
     public Text errorText;
 
+    /// <summary>
+    /// The currentMid that is shown now
+    /// </summary>
     private GameObject currentMid;
+    /// <summary>
+    /// The targeted panel where the player wants to go
+    /// </summary>
     private GameObject target;
 
+    /// <summary>
+    /// The buttons in the top and bottombar
+    /// </summary>
     public Button backBtn;
     public Button homeBtn;
 
+    /// <summary>
+    /// The edges around the player selection in the HostMid
+    /// </summary>
     public Image p2Edge;
     public Image p3Edge;
     public Image p4Edge;
 
-    //Main
+    /// <summary>
+    /// Called when a player wants to switch panels
+    /// </summary>
+    /// <param name="panel">The panel where the player wants to go</param>
     public void switchPanel(GameObject panel)
     {
-        //string cipherData = "1gw0Ap0k4iHpwl8S7ZFjAJGLZnX4dToR2h0T9oI/OL9dhM2IB1jSqOKjjyadw4kqTdcqmlDFXHa1CKI3fcRXbQ==";
-        //Debug.Log(SQL.Encrypt("UPDATE `board` SET `boardID`=[value-1],`active`=[value-2],`roomID`=[value-3],`layout`=[value-4],`turn`=[value-5],`players`=[value-6],`treasure`=[value-7],`incidents`=[value-8],`animals`=[value-9] WHERE 1")); 
+        //If there is no player yet, send player to PlayerMid
         if (PlayerState.name == null || PlayerState.name == "")
         {
             target = panel;
@@ -38,15 +58,21 @@ public class ButtonController : MonoBehaviour {
             return;
         }
 
+        //If there is no currentMid, currentmid = main
         if (currentMid == null)
         {
             currentMid = main;
         }
+
+        //Set the top and bottom button to their default
         backBtn.gameObject.SetActive(true);
         homeBtn.gameObject.SetActive(true);
+        //Disable the currentmid
         currentMid.gameObject.SetActive(false);
         currentMid = panel;
+        //Set the new  mid active
         panel.gameObject.SetActive(true);
+        //If in the player panel or main panel, disable top and bot buttons
         if (panel == main || panel == player)
         {
             backBtn.gameObject.SetActive(false);
@@ -54,7 +80,9 @@ public class ButtonController : MonoBehaviour {
         }
     }
 
-    //Main
+    /// <summary>
+    /// Sets the screen back to main menu
+    /// </summary>
     public void backButton()
     {
         if (currentMid == host || currentMid == join || currentMid == lobby  || currentMid == rules || currentMid == credits)
@@ -62,13 +90,19 @@ public class ButtonController : MonoBehaviour {
             switchPanel(main);
         }
     }
-
-    #region HostLogic
+    
+    /// <summary>
+    /// The host variables
+    /// </summary>
     public Text roomName;
     private int players = 2;
     public Room room;
 
-    //Host
+    /// <summary>
+    /// Called when an amount of players is selected.
+    /// Sets the correct edge around the button
+    /// </summary>
+    /// <param name="i">The amount of players</param>
     public void setPlayers(int i)
     {
         this.players = i;
@@ -88,7 +122,10 @@ public class ButtonController : MonoBehaviour {
             p4Edge.gameObject.SetActive(true);
         }
     }
-    //host
+    
+    /// <summary>
+    /// Creates the lobby and checks if the given input for roomname is correct
+    /// </summary>
     public void CreateLobby()
     {
         room = new Room();
@@ -124,12 +161,15 @@ public class ButtonController : MonoBehaviour {
             toggleError("Vul een kamernaam in.");
         }
     }
-    #endregion
-
-    #region PlayerLogic
-    //player
+    
+    /// <summary>
+    /// The playername
+    /// </summary>
     public Text playerName;
-    //player
+
+    /// <summary>
+    /// Creates the player and sends the player on to the next panel
+    /// </summary>
     public void createPlayer()
     {
         PlayerState.name = playerName.text;
@@ -145,13 +185,14 @@ public class ButtonController : MonoBehaviour {
             player.gameObject.SetActive(false);
         }
     }
-    #endregion
-
-    #region JoinLogic
+    
     //join
     public Text joinRoom;
-    public Text errorJoin;
 
+    /// <summary>
+    /// Join a lobby. Called from the joinMid.
+    /// Checks if the player entered a correct roomname and if so adds the player to that lobby
+    /// </summary>
     public void JoinLobby()
     {
         lobbyStartBtn.gameObject.SetActive(false);
@@ -164,12 +205,14 @@ public class ButtonController : MonoBehaviour {
 
                 if (room.name != null)
                 {
+                    //Set the roomstate vars for later use
                     RoomState.name = room.name;
                     RoomState.id = room.roomID;
                     RoomState.host = room.host;
                     RoomState.active = room.active;
                     RoomState.players = room.players;
 
+                    //Update the panel to show correct data
                     string currentPlayers = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = " + RoomState.id);
                     string[] current = currentPlayers.Split('*');
                     if (current.Length < room.players)
@@ -214,9 +257,10 @@ public class ButtonController : MonoBehaviour {
             toggleError("Vul een kamernaam in.");
         }
     }
-    #endregion
     
-    //lobby
+    /// <summary>
+    /// Starts the game if the amount of players is correct
+    /// </summary>
     public void StartGame()
     {
         if (RoomState.players == RoomState.currentPlayers)
@@ -225,52 +269,31 @@ public class ButtonController : MonoBehaviour {
         }
     }
 
-    //lobby
+    /// <summary>
+    /// Exit the game
+    /// </summary>
     public void ExitGame()
     {
-        lobbyStartBtn.gameObject.SetActive(true);
-        if (RoomState.p1 != new Player())
-        {
-            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p1.accountID);
-        }
-        if (RoomState.p2 != new Player())
-        {
-            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p2.accountID);
-        }
-        if (RoomState.p3 != new Player())
-        {
-            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p3.accountID);
-        }
-        if (RoomState.p4 != new Player())
-        {
-            SQL.Instance.executeQuery("UPDATE `account` SET `roomID`= 0 WHERE accountID " + RoomState.p4.accountID);
-        }
         switchPanel(main);
     }
-    //lobby
 
-    //Game
-    public void NewGameBtn(string newGameLevel)
-    {
-        SceneManager.LoadScene(newGameLevel);
-    }
-
-    //lobby
+    // The lobby vars
     public Text lobbyRoomName;
     public Text lobbyPlayerNames;
     private int lobbyPullTimer = -1;
-    /// <summary>
-    /// 
-    /// </summary>
     public Button lobbyStartBtn;
-    public Button lobbyExitBtn;
 
+    /// <summary>
+    /// The update loop in the lobby
+    /// </summary>
     public void Update()
     {
+        //Only trigger if currently in the lobby
         if (currentMid == lobby)
         {
             if (lobbyPullTimer > 120 || lobbyPullTimer == -1)
             {
+                //If not the host, check if game started
                 if (RoomState.host != PlayerState.id)
                 {
                     string started = SQL.Instance.executeQuery("SELECT started as result FROM `room` where roomID = '" + RoomState.id + "'");
@@ -279,8 +302,10 @@ public class ButtonController : MonoBehaviour {
                         SceneManager.LoadScene("game");
                     }
                 }
+                //Reset timer
                 lobbyPullTimer = 0;
 
+                //Get the current players and update roomstate
                 string currentPlayers = SQL.Instance.executeQuery("SELECT * FROM `account` WHERE roomID = '" + RoomState.id + "'");
                 string[] current = currentPlayers.Split('*');
                 RoomState.currentPlayers = current.Length;
@@ -306,6 +331,7 @@ public class ButtonController : MonoBehaviour {
                     RoomState.p4 = JsonUtility.FromJson<Player>(current[3]);
                 }
 
+                //Update the lobby data in the panel
                 lobbyRoomName.text = RoomState.name + " (" + RoomState.currentPlayers + " / " + RoomState.players + ")";
                 lobbyPlayerNames.text = RoomState.p1.nickName + "\n" +
                     RoomState.p2.nickName + "\n" +
@@ -316,6 +342,10 @@ public class ButtonController : MonoBehaviour {
         lobbyPullTimer++;
     }
 
+    /// <summary>
+    /// Go back to the main menu
+    /// Called from the homebtn in the bottom of the screen
+    /// </summary>
     public void goHome()
     {
         if (currentMid != null)
@@ -324,6 +354,10 @@ public class ButtonController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Toggle sound on and off
+    /// Called from the button in the bottom
+    /// </summary>
     public void toggleSound()
     {
         if (PlayerState.sound)
@@ -336,6 +370,11 @@ public class ButtonController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Enables and disables the errorPopUp
+    /// 
+    /// </summary>
+    /// <param name="description"></param>
     public void toggleError(string description)
     {
         if (error.activeSelf)
