@@ -8,7 +8,6 @@ public class Board
     public int boardID;
     public string active;
     public int roomID;
-    public GameState gamestate;
     public int turn;
     public string layout;
     public string players;
