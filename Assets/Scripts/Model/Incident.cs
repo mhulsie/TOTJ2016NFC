@@ -9,7 +9,6 @@ public class Incident
     public int incidentID;      //Identification
     public string name;         //Name of incident
     public string action;       //Result of encountered incident
-    public string condition;    //What to do to overcome the incident
     public int tile;            //ID of tile on which this incident is placed
     public string title;        //Title to show in dialogue
     public string description;  //Description to show in dialogue
