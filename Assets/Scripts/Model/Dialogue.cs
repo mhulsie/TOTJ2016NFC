@@ -3,11 +3,8 @@
 /// </summary>
 public class Dialogue
 {
-    /// <summary>
-    /// The incident variables, corresponding to the database table
-    /// </summary>
-    public string title;
-    public string description;
-    public string button;
-    public string image;
+    public string title;            //Title to show
+    public string description;      //Description to show
+    public string button;           //Button text to show
+    public string image;            //Name of the image to show
 }
