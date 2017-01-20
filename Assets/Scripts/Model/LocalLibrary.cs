@@ -201,6 +201,7 @@ public class LocalLibrary
     public void defineQuests()
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
+        //Calculate the place of the player in the turnorder
         int turn = 0;
         int count = 0;
         foreach (Player item in players.list)
@@ -215,18 +216,22 @@ public class LocalLibrary
             }
         }
 
+        //Define the 3 quests
         setRandomTile(turn);
         setRandomTile(turn + 4);
         setRandomTile(turn + 8);
 
+        //Set the quest values to the playerstate
         PlayerState.redQuest = quests[turn];
         PlayerState.greenQuest = quests[turn + 4];
         PlayerState.blueQuest = quests[turn + 8];
 
+        //Set the progress values to the quests
         PlayerState.redQuest.progress = 0;
         PlayerState.greenQuest.progress = 0;
         PlayerState.blueQuest.progress = 0;
 
+        //Set the dialogues for each quest
         PlayerState.redQuest.startDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.startDialogue);
         PlayerState.redQuest.doDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.doDialogue);
         PlayerState.redQuest.turnInDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.redQuest.turnInDialogue);
@@ -243,10 +248,10 @@ public class LocalLibrary
     /// <summary>
     /// This functions sets the tiles for quest start, do and turnin points
     /// </summary>
-    /// <param name="i"></param>
+    /// <param name="i">The index of the quest in local.quests</param>
     public void setRandomTile(int i)
     {
-        
+        //Translate the startpoint to a position   
         if (quests[i].startPoint == "3")
         {
             quests[i].startPosition = positionVillageA;
@@ -260,6 +265,7 @@ public class LocalLibrary
             quests[i].startPosition = positionVillageC;
         }
 
+        //Translate dopoint to correct position
         switch (quests[i].doPoint)
         {
             case "cave":
@@ -287,6 +293,8 @@ public class LocalLibrary
                 quests[i].doPosition = positionLake[(int)Random.Range(0f, positionLake.Count - 1)];
                 break;
         }
+
+        //Translate the turnInPoint to the correct position
         if (quests[i].turnInPoint == "3")
         {
             quests[i].turnInPosition = positionVillageA;

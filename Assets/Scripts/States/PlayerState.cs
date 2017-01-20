@@ -17,6 +17,6 @@ public static class PlayerState
     public static Quest energyQuest;                    //Current quest to collect energy
     public static int clues = 0;                        //Number of clues collected
     public static bool sound = true;                    //Switch for sound or no sound in game
-    public static bool activeTrap;                      //Position in layout where this player set a trap for other players
+    public static bool activeTrap;                      //True if player has an active trap in the game
 }
 
