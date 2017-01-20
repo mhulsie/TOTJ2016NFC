@@ -3,44 +3,65 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// This is the local library class. It is used to get and store data from the catalogues in the databases.
+/// It also sets the map and determines which quests are assigned to the player.
+/// </summary>
 public class LocalLibrary
 {
-    public int positionVillageC;
+    public int positionVillageC;        //Layout positions of each village
     public int positionVillageB;
     public int positionVillageA;
-    public int positionAirplane;
-    public int positionCave;
-    public List<int> positionLake;
-    public List<int> positionOpen;
-    public List<int> positionFlowers;
-    public List<int> positionForest;
-    public List<int> positionBirds;
-    public List<int> positionPlants;
+    public int positionAirplane;        //Layout position of the airplane tile
+    public int positionCave;            //Layout position of the cave tile
+    public List<int> positionLake;      //Layout positions of the lake tiles
+    public List<int> positionOpen;      //Layout positions of the open place tiles
+    public List<int> positionFlowers;   //Layout positions of the flower tiles
+    public List<int> positionForest;    //Layout positions of the forest tiles
+    public List<int> positionBirds;     //Layout positions of the bird tiles
+    public List<int> positionPlants;    //Layout positions of the plant tiles
 
-    public List<Quest> quests;
-    public Treasure treasure;
-    public int turn;
-    private Board board;
-    public bool myTurn = false;
+    public List<Quest> quests;          //List of all quests
+    public Treasure treasure;           //Treasure of this game
+    public int turn;                    //Current turn
+    private Board board;                //Board from this game
+    public bool myTurn = false;         //True when current turn is my turn
 
+    /// <summary>
+    /// This is the wrapper for the board layout list.
+    /// It is done this way bescause Json cannot directly convert a list.
+    /// </summary>
     [System.Serializable]
     public struct layoutWrapper { public List<string> list; };
     public layoutWrapper layout;
 
+    /// <summary>
+    /// This is the wrapper for the player list.
+    /// It is done this way bescause Json cannot directly convert a list.
+    /// </summary>
     [System.Serializable]
     public struct playerWrapper { public List<Player> list; };
     public playerWrapper players;
 
+    /// <summary>
+    /// This is the wrapper for the incident list.
+    /// It is done this way bescause Json cannot directly convert a list.
+    /// </summary>
     [System.Serializable]
     public struct incidentWrapper { public List<Incident> list; };
     public incidentWrapper incidents;
 
+    /// <summary>
+    /// The constructor of the local library
+    /// </summary>
     public LocalLibrary()
     {
+        //Get the current board state from database and decode into board object
         string boardResult = SQL.Instance.executeQuery("select * from board where roomID =" + RoomState.id);
         board = JsonUtility.FromJson<Board>(boardResult);
         turn = board.turn;
 
+        //Initializes lists
         positionLake = new List<int>();
         positionOpen = new List<int>();
         positionFlowers = new List<int>();
@@ -48,7 +69,9 @@ public class LocalLibrary
         positionBirds = new List<int>();
         positionPlants = new List<int>();
         incidents.list = new List<Incident>();
+        //Update local data
         updateData();
+        //Get permanent data
         getData();
     }
 
@@ -70,6 +93,7 @@ public class LocalLibrary
     /// </summary>
     public void getData()
     {
+        //Get quests
         quests = new List<Quest>();
         string questsResult = SQL.Instance.executeQuery("select * from quest");
         if (questsResult != "TRUE")
@@ -81,29 +105,45 @@ public class LocalLibrary
             }
         }
 
+        //Get players
         players.list = new List<Player>();
         players = JsonUtility.FromJson<playerWrapper>(board.players);
 
+        //Get treasure
         treasure = JsonUtility.FromJson<Treasure>(board.treasure);
         
+        //Get layout
         layout = JsonUtility.FromJson<layoutWrapper>(board.layout);
+        
+        //Set map
         setMap();
+        
+        //Assign quests to player
         defineQuests();
     }
 
+    /// <summary>
+    /// This function sets the map, so later on clues and quest positions can be shown
+    /// </summary>
     public void setMap()
     {
         //layout.list.RemoveAt(0);
         //layout.list[0] = "11";
         //layout.list.Add("8");
         
+
+        //This loop loops through the layout 
         for (int i = 0; i < 30; i++)
         {
+
+            //It assigns the right tile image to each image on the map according to the tile id
             int j = i + 1;
             Image tempImage = GameObject.Find("Image" + j).GetComponent<Image>();
             int current = int.Parse(layout.list[i]);
             tempImage.sprite = GameObject.Find("tile " + current).GetComponent<SpriteRenderer>().sprite;
 
+
+            //Then it sets the layout positions of different tile types like airplane, cave etc according to tile id.
             if (current == 1)
             {
                 positionAirplane = i;
@@ -155,6 +195,9 @@ public class LocalLibrary
         }
     }
 
+    /// <summary>
+    /// This function assigns random red, blue and green quests to the player
+    /// </summary>
     public void defineQuests()
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
@@ -197,8 +240,13 @@ public class LocalLibrary
         PlayerState.greenQuest.turnInDialogueD = JsonUtility.FromJson<Dialogue>(PlayerState.greenQuest.turnInDialogue);
     }
 
+    /// <summary>
+    /// This functions sets the tiles for quest start, do and turnin points
+    /// </summary>
+    /// <param name="i"></param>
     public void setRandomTile(int i)
     {
+        
         if (quests[i].startPoint == "3")
         {
             quests[i].startPosition = positionVillageA;
