@@ -108,7 +108,7 @@ public class GameController : MonoBehaviour
                 tempDialogue.title = "Te laat";
                 tempDialogue.description = "Ai, een van je tegenstanders heeft de schat al gevonden. Helaas je verliest het spel.";
                 tempDialogue.button = "Ga naar het hoofdmenu";
-                tempDialogue.image = "TreasureL";
+                //tempDialogue.image = "TreasureL";
                 togglePopUp();
             }
         }
@@ -375,9 +375,9 @@ public class GameController : MonoBehaviour
             tempDialogue.description = "Hoera! Je hebt de schat gevonden en het spel gewonnen!";
             tempDialogue.button = "Ga naar het hoofdmenu";
             tempDialogue.image = "Treasure";
+            SQL.Instance.executeQuery("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
             togglePopUp();
             //Update database
-            SQL.Instance.executeQuery("UPDATE `board` SET `turn`= 100 WHERE roomID = " + RoomState.id);
         }
     }
 
@@ -494,36 +494,26 @@ public class GameController : MonoBehaviour
         {
             setColor(PlayerState.blueQuest.doPosition, Color.blue);
         }
-        else if(PlayerState.blueQuest.progress == 2)
+        else if (PlayerState.blueQuest.progress == 2)
         {
-            if(PlayerState.blueQuest.turnInPoint != "")
-            {
-                setColor(PlayerState.blueQuest.turnInPosition, Color.blue);
-            }
+            setColor(PlayerState.blueQuest.doPosition, Color.blue);
         }
 
         if(PlayerState.redQuest.progress == 1)
         {
             setColor(PlayerState.redQuest.doPosition, Color.red);
-        }
-        else if(PlayerState.redQuest.progress == 2)
+        } else if (PlayerState.redQuest.progress == 1)
         {
-            if(PlayerState.redQuest.turnInPoint != "")
-            {
-                setColor(PlayerState.redQuest.turnInPosition, Color.red);
-            }
+            setColor(PlayerState.redQuest.doPosition, Color.red);
         }
 
         if (PlayerState.greenQuest.progress == 1)
         {
             setColor(PlayerState.greenQuest.doPosition, Color.green);
         }
-        else if (PlayerState.greenQuest.progress == 2)
+        else if(PlayerState.greenQuest.progress == 2)
         {
-            if (PlayerState.greenQuest.turnInPoint != "")
-            {
-                setColor(PlayerState.greenQuest.turnInPosition, Color.green);
-            }
+            setColor(PlayerState.greenQuest.turnInPosition, Color.green);
         }
 
         //set color to white on current position
